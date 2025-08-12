@@ -1,9 +1,8 @@
-use cube::{Cube, CubeMove, CornerSticker::*, EdgeSticker::*};
+use crate::rubiks::cube::{Cube, CubeMove};
+// use crate::rubiks::stickers::{CornerSticker::*, EdgeSticker::*};
+// use crate::rubiks::solvers::pochmann::PochmannSolver;
 
-use crate::pochmann::PochmannSolver;
-
-mod cube;
-mod pochmann;
+mod rubiks;
 
 fn main() {
     use CubeMove::*;
@@ -21,13 +20,12 @@ fn main() {
     ]);
     assert_eq!(cube, Cube::solved());
 
-    let solver = PochmannSolver
-    {
-        buffer_corner: UBL,
-        buffer_edge: UR
-    };
-    let solution = solver.solve(&cube);
+    // let solver = PochmannSolver {
+    //     buffer_corner: UBL,
+    //     buffer_edge: UR
+    // };
+    // let solution = solver.solve(&cube);
 
-    println!("C: {:?}", solution.corner_cycles);
-    println!("E: {:?}", solution.corner_cycles);
+    // println!("C: {:?}", solution.corner_cycles);
+    // println!("E: {:?}", solution.corner_cycles);
 }

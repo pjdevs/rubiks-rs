@@ -6,4 +6,3 @@ edition = "2024"
 [dependencies]
 bitmask-enum = "2.2.5"
 enum-iterator = "2.1.0"
-enum-map = "2.7.3"
