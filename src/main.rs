@@ -1,4 +1,6 @@
-use cube::{Cube, CubeMove};
+use cube::{Cube, CubeMove, CornerSticker::*, EdgeSticker::*};
+
+use crate::pochmann::PochmannSolver;
 
 mod cube;
 mod pochmann;
@@ -17,6 +19,15 @@ fn main() {
         R, U, Rp, Up,
         R, U, Rp, Up,
     ]);
+    assert_eq!(cube, Cube::solved());
 
-    println!("{:?}", cube == Cube::solved());
+    let solver = PochmannSolver
+    {
+        buffer_corner: UBL,
+        buffer_edge: UR
+    };
+    let solution = solver.solve(&cube);
+
+    println!("C: {:?}", solution.corner_cycles);
+    println!("E: {:?}", solution.corner_cycles);
 }
