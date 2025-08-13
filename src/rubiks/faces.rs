@@ -1,12 +1,9 @@
 use bitmask_enum::bitmask;
 
-pub const STICKERS_ON_CORNERS : u8 = 3;
-pub const STICKERS_ON_EDGES : u8 = 2;
-pub const NUMBER_OF_CORNERS : u8 = 8;
-pub const NUMBER_OF_EDGES : u8 = 12;
+use crate::rubiks::cube_constants::*;
 
 #[bitmask(u8)]
-pub enum Faces {
+pub enum FaceMask {
     U,
     D,
     F,
@@ -35,7 +32,7 @@ pub enum Faces {
     DBR = Self::D.or(Self::B).or(Self::R).bits,
 }
 
-impl Faces {
+impl FaceMask {
     pub const fn is_corner(self) -> bool {
         self.bits().count_ones() == STICKERS_ON_CORNERS as u32
     }

@@ -2,7 +2,9 @@ use std::collections::HashMap;
 use std::iter::once;
 
 // use crate::rubiks::stickers::{CornerSticker, CubeSticker, EdgeSticker};
-use crate::rubiks::faces::{Faces, STICKERS_ON_CORNERS, STICKERS_ON_EDGES, NUMBER_OF_CORNERS, NUMBER_OF_EDGES};
+use crate::rubiks::cubie::Cubie;
+use crate::rubiks::faces::FaceMask;
+use crate::rubiks::twist::Twist;
 
 // const CORNER_STICKERS: [[CornerSticker; STICKERS_ON_CORNERS as usize]; NUMBER_OF_CORNERS as usize] = [
 //     [CornerSticker::UFR, CornerSticker::FRU, CornerSticker::RFU],
@@ -30,166 +32,97 @@ use crate::rubiks::faces::{Faces, STICKERS_ON_CORNERS, STICKERS_ON_EDGES, NUMBER
 //     [EdgeSticker::BL, EdgeSticker::LB],
 // ];
 
-pub type Twist = u8;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Cubie {
-    faces: Faces,
-    twist: Twist,
-}
-
-impl Cubie {
-    pub const TWIST_SOLVED: Twist = 0;
-    pub const TWIST_120: Twist = 1;
-    pub const TWIST_240: Twist = 2;
-    pub const TWIST_FLIPPED: Twist = 1;
-
-    pub const fn is_corner(&self) -> bool {
-        self.faces.is_corner()
-    }
-
-    pub const fn is_edge(&self) -> bool {
-        self.faces.is_edge()
-    }
-
-    pub const fn twisted(&self, twist: Twist) -> Cubie {
-        let max_stickers = if self.is_corner() {
-            STICKERS_ON_CORNERS
-        } else {
-            STICKERS_ON_EDGES
-        };
-
-        Cubie {
-            faces: self.faces,
-            twist: (self.twist + twist) % max_stickers
-        }
-    }
-
-    pub const fn corner(faces: Faces) -> Result<Cubie, ()> {
-        if !faces.is_corner() {
-            return Err(())
-        }
-
-        Ok(Cubie {
-            faces,
-            twist: Self::TWIST_SOLVED
-        })
-    }
-
-    pub const fn edge(faces: Faces) -> Result<Cubie, ()> {
-        if !faces.is_edge() {
-            return Err(())
-        }
-
-        Ok(Cubie {
-            faces,
-            twist: Self::TWIST_SOLVED
-        })
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CubeMove {
     U, R, Up, Rp
 }
 
+impl CubeMove {
+    pub fn inverted(&self) -> Self {
+        match self {
+            CubeMove::U => Self::Up,
+            CubeMove::R => Self::Rp,
+            CubeMove::Up => Self::U,
+            CubeMove::Rp => Self::R,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Cube {
-    cubies: HashMap<Faces, Cubie>
+    cubies: HashMap<FaceMask, Cubie>
 }
 
 impl Cube {
     pub fn apply_moves(&mut self, moves: &Vec<CubeMove>) {
         for cube_move in moves {
-            self.apply_move(cube_move);
+            self.apply_move(*cube_move);
         }
     }
 
-    fn apply_move(&mut self, cube_move: &CubeMove) {
+    fn apply_move(&mut self, cube_move: CubeMove) {
         match cube_move {
             CubeMove::U => {
-                self.cycle_cubies(
-                    &[Faces::UFL, Faces::UBL, Faces::UBR, Faces::UFR],
-                    &[Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED]
-                );
-                self.cycle_cubies(
-                    &[Faces::UF, Faces::UL, Faces::UB, Faces::UR],
-                    &[Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED]
-                );
+                self.cycle_cubies(&CYCLE_U_CORNERS, &TWIST_CORNERS_SOLVED);
+                self.cycle_cubies(&CYCLE_U_EDGES, &TWIST_EDGES_SOLVED);
             },
             CubeMove::R => {
-                self.cycle_cubies(
-                    &[Faces::UFR, Faces::UBR, Faces::DBR, Faces::DFR],
-                    &[Cubie::TWIST_120, Cubie::TWIST_240, Cubie::TWIST_120, Cubie::TWIST_240]
-                );
-                self.cycle_cubies(
-                    &[Faces::UR, Faces::BR, Faces::DR, Faces::FR],
-                    &[Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED]
-                );
+                self.cycle_cubies(&CYCLE_R_CORNERS, &TWIST_CORNERS_120_240);
+                self.cycle_cubies(&CYCLE_R_EDGES, &TWIST_EDGES_FLIP);
             },
             CubeMove::Up => {
-                self.cycle_cubies(
-                    &[Faces::UFL, Faces::UFR, Faces::UBR, Faces::UBL],
-                    &[Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED]
-                );
-                self.cycle_cubies(
-                    &[Faces::UF, Faces::UR, Faces::UB, Faces::UL],
-                    &[Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED]
-                );
+                self.cycle_cubies(&CYCLE_UP_CORNERS, &TWIST_CORNERS_SOLVED);
+                self.cycle_cubies(&CYCLE_UP_EDGES, &TWIST_EDGES_SOLVED);
             },
             CubeMove::Rp => {
-                self.cycle_cubies(
-                    &[Faces::UFR, Faces::DFR, Faces::DBR, Faces::UBR],
-                    &[Cubie::TWIST_240, Cubie::TWIST_120, Cubie::TWIST_240, Cubie::TWIST_120]
-                );
-                self.cycle_cubies(
-                    &[Faces::UR, Faces::FR, Faces::DR, Faces::BR],
-                    &[Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED, Cubie::TWIST_SOLVED]
-                );
+                self.cycle_cubies(&CYCLE_RP_CORNERS, &TWIST_CORNERS_240_120);
+                self.cycle_cubies(&CYCLE_RP_EDGES, &TWIST_EDGES_FLIP);
             },
         }
     }
 
-    fn cycle_cubies(&mut self, corners: &[Faces], twists: &[u8]) {
-        let first_position = corners.first().expect("Corner cycles should be at least of size 1");
-        let mut last_cubie = *self.cubies.get(first_position).expect("All pieces should be in cubies");
+    fn cycle_cubies(&mut self, locations: &'static [FaceMask; 4], twists: &'static [Twist; 4]) {
+        // let first_cubie = self.cubies[&locations[0]].twisted(twists[3]);
+
+        // self.cubies.insert(locations[0], self.cubies[&locations[3]].twisted(twists[2]));
+        // self.cubies.insert(locations[3], self.cubies[&locations[2]].twisted(twists[1]));
+        // self.cubies.insert(locations[2], self.cubies[&locations[1]].twisted(twists[0]));
+        // self.cubies.insert(locations[1], first_cubie);
+
+        // let source = locations[0];
+
+        // for (destination, twist)
+
+        let first_position = locations[0];
+        let mut last_cubie = self.cubies[&first_position];
         
-        for (target_position, twist) in corners.iter().skip(1).chain(once(first_position)).zip(twists) {
-            let target_cubie = self.cubies.get(target_position).expect("All pieces should be in cubies");
+        for (target_position, twist) in locations.iter().skip(1).chain(once(&first_position)).zip(twists) {
+            let target_cubie = self.cubies[target_position];
             
             // save which one was here before permutation
             let cubie_to_send = last_cubie;
-            last_cubie = *target_cubie;
+            last_cubie = target_cubie;
 
             // do the permutation
             self.cubies.insert(*target_position, cubie_to_send.twisted(*twist));
         }
     }
 
+    pub fn is_solved(&self) -> bool {
+        for (location, expected_cubie) in &SOLVED_CUBIES {
+            if self.cubies[location] != *expected_cubie {
+                return false;
+            }
+        }
+
+        true
+    }
+
     pub fn solved() -> Cube {
         Cube {
-            cubies: HashMap::from([
-                (Faces::UFR, Cubie::corner(Faces::UFR).unwrap()),
-                (Faces::UFL, Cubie::corner(Faces::UFL).unwrap()),
-                (Faces::UBL, Cubie::corner(Faces::UBL).unwrap()),
-                (Faces::UBR, Cubie::corner(Faces::UBR).unwrap()),
-                (Faces::DFR, Cubie::corner(Faces::DFR).unwrap()),
-                (Faces::DFL, Cubie::corner(Faces::DFL).unwrap()),
-                (Faces::DBL, Cubie::corner(Faces::DBL).unwrap()),
-                (Faces::DBR, Cubie::corner(Faces::DBR).unwrap()),
-                (Faces::UR, Cubie::edge(Faces::UR).unwrap()),
-                (Faces::UF, Cubie::edge(Faces::UF).unwrap()),
-                (Faces::UL, Cubie::edge(Faces::UL).unwrap()),
-                (Faces::UB, Cubie::edge(Faces::UB).unwrap()),
-                (Faces::DR, Cubie::edge(Faces::DR).unwrap()),
-                (Faces::DF, Cubie::edge(Faces::DF).unwrap()),
-                (Faces::DL, Cubie::edge(Faces::DL).unwrap()),
-                (Faces::DB, Cubie::edge(Faces::DB).unwrap()),
-                (Faces::FR, Cubie::edge(Faces::FR).unwrap()),
-                (Faces::FL, Cubie::edge(Faces::FL).unwrap()),
-                (Faces::BL, Cubie::edge(Faces::BL).unwrap()),
-                (Faces::BR, Cubie::edge(Faces::BR).unwrap()),
-            ])
+            cubies: HashMap::from(SOLVED_CUBIES)
         }
     }
 
@@ -251,4 +184,127 @@ impl Cube {
     //         _ => None
     //     }
     // }
+}
+
+static SOLVED_CUBIES: [(FaceMask, Cubie); 20] = [
+    (FaceMask::UFR, Cubie::UFR),
+    (FaceMask::UFL, Cubie::UFL),
+    (FaceMask::UBL, Cubie::UBL),
+    (FaceMask::UBR, Cubie::UBR),
+    (FaceMask::DFR, Cubie::DFR),
+    (FaceMask::DFL, Cubie::DFL),
+    (FaceMask::DBL, Cubie::DBL),
+    (FaceMask::DBR, Cubie::DBR),
+    (FaceMask::UR, Cubie::UR),
+    (FaceMask::UF, Cubie::UF),
+    (FaceMask::UL, Cubie::UL),
+    (FaceMask::UB, Cubie::UB),
+    (FaceMask::DR, Cubie::DR),
+    (FaceMask::DF, Cubie::DF),
+    (FaceMask::DL, Cubie::DL),
+    (FaceMask::DB, Cubie::DB),
+    (FaceMask::FR, Cubie::FR),
+    (FaceMask::FL, Cubie::FL),
+    (FaceMask::BL, Cubie::BL),
+    (FaceMask::BR, Cubie::BR),
+];
+
+// ? We could newtype an create CornerCycle and EdgeCycle and validate at compile time that there is no faces/edges/corners in same array
+static CYCLE_U_CORNERS: [FaceMask; 4] = [FaceMask::UFL, FaceMask::UBL, FaceMask::UBR, FaceMask::UFR];
+static CYCLE_U_EDGES: [FaceMask; 4] = [FaceMask::UF, FaceMask::UL, FaceMask::UB, FaceMask::UR];
+static CYCLE_R_CORNERS: [FaceMask; 4] = [FaceMask::UFR, FaceMask::UBR, FaceMask::DBR, FaceMask::DFR];
+static CYCLE_R_EDGES: [FaceMask; 4] = [FaceMask::UR, FaceMask::BR, FaceMask::DR, FaceMask::FR];
+static CYCLE_UP_CORNERS: [FaceMask; 4] = [FaceMask::UFL, FaceMask::UFR, FaceMask::UBR, FaceMask::UBL];
+static CYCLE_UP_EDGES: [FaceMask; 4] = [FaceMask::UF, FaceMask::UR, FaceMask::UB, FaceMask::UL];
+static CYCLE_RP_CORNERS: [FaceMask; 4] = [FaceMask::UFR, FaceMask::DFR, FaceMask::DBR, FaceMask::UBR];
+static CYCLE_RP_EDGES: [FaceMask; 4] = [FaceMask::UR, FaceMask::FR, FaceMask::DR, FaceMask::BR];
+static TWIST_CORNERS_SOLVED: [Twist; 4] = [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
+static TWIST_CORNERS_120_240: [Twist; 4] = [Twist::CW_120, Twist::CW_240, Twist::CW_120, Twist::CW_240];
+static TWIST_CORNERS_240_120: [Twist; 4] = [Twist::CW_240, Twist::CW_120, Twist::CW_240, Twist::CW_120];
+static TWIST_EDGES_SOLVED: [Twist; 4] = [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
+static TWIST_EDGES_FLIP: [Twist; 4] = [Twist::FLIPPED, Twist::FLIPPED, Twist::FLIPPED, Twist::FLIPPED];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_move_u() {
+        let mut cube = Cube::solved();
+        cube.apply_move(CubeMove::U);
+
+        assert_eq!(cube.cubies[&FaceMask::UFL], Cubie::UFR);
+        assert_eq!(cube.cubies[&FaceMask::UFR], Cubie::UBR);
+        assert_eq!(cube.cubies[&FaceMask::UBR], Cubie::UBL);
+        assert_eq!(cube.cubies[&FaceMask::UBL], Cubie::UFL);
+
+        assert_eq!(cube.cubies[&FaceMask::UF], Cubie::UR);
+        assert_eq!(cube.cubies[&FaceMask::UR], Cubie::UB);
+        assert_eq!(cube.cubies[&FaceMask::UB], Cubie::UL);
+        assert_eq!(cube.cubies[&FaceMask::UL], Cubie::UF);
+    }
+
+    #[test]
+    fn test_move_up() {
+        let mut cube = Cube::solved();
+        cube.apply_move(CubeMove::Up);
+
+        assert_eq!(cube.cubies[&FaceMask::UFR], Cubie::UFL);
+        assert_eq!(cube.cubies[&FaceMask::UBR], Cubie::UFR);
+        assert_eq!(cube.cubies[&FaceMask::UBL], Cubie::UBR);
+        assert_eq!(cube.cubies[&FaceMask::UFL], Cubie::UBL);
+
+        assert_eq!(cube.cubies[&FaceMask::UR], Cubie::UF);
+        assert_eq!(cube.cubies[&FaceMask::UB], Cubie::UR);
+        assert_eq!(cube.cubies[&FaceMask::UL], Cubie::UB);
+        assert_eq!(cube.cubies[&FaceMask::UF], Cubie::UL);
+    }
+
+    #[test]
+    fn test_move_r() {
+        let mut cube = Cube::solved();
+        cube.apply_move(CubeMove::R);
+
+        assert_eq!(cube.cubies[&FaceMask::UBR], Cubie::UFR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&FaceMask::DBR], Cubie::UBR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&FaceMask::DFR], Cubie::DBR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&FaceMask::UFR], Cubie::DFR.twisted(Twist::CW_240));
+
+        assert_eq!(cube.cubies[&FaceMask::BR], Cubie::UR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&FaceMask::DR], Cubie::BR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&FaceMask::FR], Cubie::DR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&FaceMask::UR], Cubie::FR.twisted(Twist::FLIPPED));
+    }
+
+        #[test]
+    fn test_move_rp() {
+        let mut cube = Cube::solved();
+        cube.apply_move(CubeMove::Rp);
+
+        assert_eq!(cube.cubies[&FaceMask::UFR], Cubie::UBR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&FaceMask::UBR], Cubie::DBR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&FaceMask::DBR], Cubie::DFR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&FaceMask::DFR], Cubie::UFR.twisted(Twist::CW_240));
+
+        assert_eq!(cube.cubies[&FaceMask::UR], Cubie::BR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&FaceMask::BR], Cubie::DR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&FaceMask::DR], Cubie::FR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&FaceMask::FR], Cubie::UR.twisted(Twist::FLIPPED));
+    }
+
+    #[test]
+    fn sexy_has_no_effect() {
+        use CubeMove::*;
+
+        let mut cube = Cube::solved();
+        cube.apply_moves(&vec![
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+        ]);
+        assert_eq!(cube, Cube::solved());
+    }
 }
