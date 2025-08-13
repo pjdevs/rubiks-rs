@@ -13,8 +13,8 @@ fn main() {
     ]);
 
     let solver = PochmannSolver {
-        buffer_corner: CubeStickerLocation { piece_location: CubePieceLocation::new(FaceMask::UBL), twist:Twist::SOLVED },
-        buffer_edge: CubeStickerLocation { piece_location: CubePieceLocation::new(FaceMask::UR), twist:Twist::SOLVED },
+        buffer_corner: CubeStickerLocation { piece_location: CubePieceLocation::UBL, twist:Twist::SOLVED },
+        buffer_edge: CubeStickerLocation { piece_location: CubePieceLocation::UR, twist:Twist::SOLVED },
     };
     let solution = solver.solve(&cube);
 

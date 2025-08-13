@@ -9,26 +9,35 @@ pub struct CubePiece {
 }
 
 impl CubePiece {
-    pub const UFR: CubePiece = CubePiece::corner(CubePieceLocation::new(FaceMask::UFR));
-    pub const UFL: CubePiece = CubePiece::corner(CubePieceLocation::new(FaceMask::UFL));
-    pub const UBL: CubePiece = CubePiece::corner(CubePieceLocation::new(FaceMask::UBL));
-    pub const UBR: CubePiece = CubePiece::corner(CubePieceLocation::new(FaceMask::UBR));
-    pub const DFR: CubePiece = CubePiece::corner(CubePieceLocation::new(FaceMask::DFR));
-    pub const DFL: CubePiece = CubePiece::corner(CubePieceLocation::new(FaceMask::DFL));
-    pub const DBL: CubePiece = CubePiece::corner(CubePieceLocation::new(FaceMask::DBL));
-    pub const DBR: CubePiece = CubePiece::corner(CubePieceLocation::new(FaceMask::DBR));
-    pub const UR: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::UR));
-    pub const UF: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::UF));
-    pub const UL: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::UL));
-    pub const UB: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::UB));
-    pub const DR: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::DR));
-    pub const DF: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::DF));
-    pub const DL: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::DL));
-    pub const DB: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::DB));
-    pub const FR: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::FR));
-    pub const FL: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::FL));
-    pub const BL: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::BL));
-    pub const BR: CubePiece = CubePiece::edge(CubePieceLocation::new(FaceMask::BR));
+    // ? Could only use location and from_location but keep for helper ?
+    pub const UFR: CubePiece = CubePiece::corner(CubePieceLocation::UFR);
+    pub const UFL: CubePiece = CubePiece::corner(CubePieceLocation::UFL);
+    pub const UBL: CubePiece = CubePiece::corner(CubePieceLocation::UBL);
+    pub const UBR: CubePiece = CubePiece::corner(CubePieceLocation::UBR);
+    pub const DFR: CubePiece = CubePiece::corner(CubePieceLocation::DFR);
+    pub const DFL: CubePiece = CubePiece::corner(CubePieceLocation::DFL);
+    pub const DBL: CubePiece = CubePiece::corner(CubePieceLocation::DBL);
+    pub const DBR: CubePiece = CubePiece::corner(CubePieceLocation::DBR);
+    pub const UR: CubePiece = CubePiece::edge(CubePieceLocation::UR);
+    pub const UF: CubePiece = CubePiece::edge(CubePieceLocation::UF);
+    pub const UL: CubePiece = CubePiece::edge(CubePieceLocation::UL);
+    pub const UB: CubePiece = CubePiece::edge(CubePieceLocation::UB);
+    pub const DR: CubePiece = CubePiece::edge(CubePieceLocation::DR);
+    pub const DF: CubePiece = CubePiece::edge(CubePieceLocation::DF);
+    pub const DL: CubePiece = CubePiece::edge(CubePieceLocation::DL);
+    pub const DB: CubePiece = CubePiece::edge(CubePieceLocation::DB);
+    pub const FR: CubePiece = CubePiece::edge(CubePieceLocation::FR);
+    pub const FL: CubePiece = CubePiece::edge(CubePieceLocation::FL);
+    pub const BL: CubePiece = CubePiece::edge(CubePieceLocation::BL);
+    pub const BR: CubePiece = CubePiece::edge(CubePieceLocation::BR);
+
+    pub const fn from_location(location: CubePieceLocation) -> Self {
+        if location.is_corner() {
+            Self::corner(location)
+        } else {
+            Self::edge(location)
+        }
+    }
 
     pub fn is_solved(&self, location: &CubePieceLocation) -> bool {
         self.original_location == *location && self.twist == Twist::SOLVED
