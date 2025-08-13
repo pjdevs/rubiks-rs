@@ -1,6 +1,6 @@
 use crate::rubiks::cube_constants::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Twist(u8);
 
 impl Twist {
@@ -15,5 +15,13 @@ impl Twist {
 
     pub const fn edge_add(&self, other: &Twist) -> Twist {
         Twist((self.0 + other.0) % STICKERS_ON_EDGES)
+    }
+
+    pub const fn corner_opposite(&self) -> Twist {
+        Twist((STICKERS_ON_CORNERS - self.0) % STICKERS_ON_CORNERS)
+    }
+
+    pub const fn edge_opposite(&self) -> Twist {
+        Twist((STICKERS_ON_EDGES - self.0) % STICKERS_ON_EDGES)
     }
 }

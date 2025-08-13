@@ -39,5 +39,5 @@ impl FaceMask {
 
     pub const fn is_edge(self) -> bool {
         self.bits().count_ones() == STICKERS_ON_EDGES as u32
-    } 
+    }
 }

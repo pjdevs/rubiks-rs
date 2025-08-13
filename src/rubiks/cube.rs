@@ -2,8 +2,10 @@ use std::collections::HashMap;
 use std::iter::once;
 
 // use crate::rubiks::stickers::{CornerSticker, CubeSticker, EdgeSticker};
-use crate::rubiks::cubie::Cubie;
+use crate::rubiks::piece::CubePiece;
 use crate::rubiks::faces::FaceMask;
+use crate::rubiks::location::CubePieceLocation;
+use crate::rubiks::stickers::CubeStickerLocation;
 use crate::rubiks::twist::Twist;
 
 // const CORNER_STICKERS: [[CornerSticker; STICKERS_ON_CORNERS as usize]; NUMBER_OF_CORNERS as usize] = [
@@ -52,7 +54,7 @@ impl CubeMove {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Cube {
-    cubies: HashMap<FaceMask, Cubie>
+    cubies: HashMap<CubePieceLocation, CubePiece>
 }
 
 impl Cube {
@@ -83,18 +85,7 @@ impl Cube {
         }
     }
 
-    fn cycle_cubies(&mut self, locations: &'static [FaceMask; 4], twists: &'static [Twist; 4]) {
-        // let first_cubie = self.cubies[&locations[0]].twisted(twists[3]);
-
-        // self.cubies.insert(locations[0], self.cubies[&locations[3]].twisted(twists[2]));
-        // self.cubies.insert(locations[3], self.cubies[&locations[2]].twisted(twists[1]));
-        // self.cubies.insert(locations[2], self.cubies[&locations[1]].twisted(twists[0]));
-        // self.cubies.insert(locations[1], first_cubie);
-
-        // let source = locations[0];
-
-        // for (destination, twist)
-
+    fn cycle_cubies(&mut self, locations: &'static [CubePieceLocation; 4], twists: &'static [Twist; 4]) {
         let first_position = locations[0];
         let mut last_cubie = self.cubies[&first_position];
         
@@ -120,104 +111,65 @@ impl Cube {
         true
     }
 
+    pub fn iter_corners(&self) -> impl Iterator<Item = (&CubePieceLocation, &CubePiece)>  {
+        self.cubies.iter().filter(|(_, piece)| piece.is_corner())
+    }
+
+    pub fn iter_edges(&self) -> impl Iterator<Item = (&CubePieceLocation, &CubePiece)>  {
+        self.cubies.iter().filter(|(_, piece)| piece.is_edge())
+    }
+
     pub fn solved() -> Cube {
         Cube {
             cubies: HashMap::from(SOLVED_CUBIES)
         }
     }
 
-    // pub fn get_sticker_at(&self, sticker_location: CubeSticker) -> CubeSticker {
-    //     let piece_location = Cube::get_location_from(sticker_location)
-    //         .expect("Sticker should have a valid location");
-        
-    //     let cubie = match piece_location {
-    //         CubeLocation::CornerLocation(corner) => Cubie::CornerCubie(self.corners[corner]),  
-    //         CubeLocation::EdgeLocation(edge) => Cubie::EdgeCubie(self.edges[edge]),
-    //     };
+    pub fn get_piece_at(&self, sticker_location: &CubePieceLocation) -> CubePiece {
+        self.cubies[sticker_location]
+    }
 
-    //     Cube::sticker_inside(&cubie)
-    // }
-
-    // // TODO take into account the request sticker!
-    // fn sticker_inside(cubie: &Cubie) -> CubeSticker {
-    //     match cubie {
-    //         Cubie::CornerCubie(corner_cubie) => {
-    //             let mask = corner_cubie.get_face_mask();
-    //             let sticker = CornerSticker::try_from(mask).expect("Corner cubie mask should be a corner sticker");
-    //             let oriented_sticker = sticker.twisted(corner_cubie.orientation);
-    //             CubeSticker::CornerSticker(oriented_sticker)
-    //         },
-    //         Cubie::EdgeCubie(edge_cubie) => {
-    //             let mask = edge_cubie.get_face_mask();
-    //             let sticker = EdgeSticker::try_from(mask).expect("Edge cubie mask should be an edge sticker");
-    //             let oriented_sticker = match edge_cubie.orientation {
-    //                 EdgeOrientation::Solved => sticker,
-    //                 EdgeOrientation::Flipped => sticker.inverted(),
-    //             };
-    //             CubeSticker::EdgeSticker(oriented_sticker)
-    //         },
-    //     }
-    // }
-
-    // fn get_location_from<TElement: CubeElement>(element: TElement) -> Option<CubeLocation> {
-    //     match element.get_face_mask() {
-    //         Faces::UFR => Some(CubeLocation::CornerLocation(Corner::UFR)),
-    //         Faces::UFL => Some(CubeLocation::CornerLocation(Corner::UFL)),
-    //         Faces::UBL => Some(CubeLocation::CornerLocation(Corner::UBL)),
-    //         Faces::UBR => Some(CubeLocation::CornerLocation(Corner::UBR)),
-    //         Faces::DFR => Some(CubeLocation::CornerLocation(Corner::DFR)),
-    //         Faces::DFL => Some(CubeLocation::CornerLocation(Corner::DFL)),
-    //         Faces::DBL => Some(CubeLocation::CornerLocation(Corner::UFL)),
-    //         Faces::DBR => Some(CubeLocation::CornerLocation(Corner::DBR)),
-    //         Faces::UB => Some(CubeLocation::EdgeLocation(Edge::UB)),
-    //         Faces::UR => Some(CubeLocation::EdgeLocation(Edge::UR)),
-    //         Faces::UF => Some(CubeLocation::EdgeLocation(Edge::UF)),
-    //         Faces::UL => Some(CubeLocation::EdgeLocation(Edge::UL)),
-    //         Faces::DB => Some(CubeLocation::EdgeLocation(Edge::DB)),
-    //         Faces::DR => Some(CubeLocation::EdgeLocation(Edge::DR)),
-    //         Faces::DF => Some(CubeLocation::EdgeLocation(Edge::DF)),
-    //         Faces::DL => Some(CubeLocation::EdgeLocation(Edge::DL)),
-    //         Faces::BR => Some(CubeLocation::EdgeLocation(Edge::BR)),
-    //         Faces::BL => Some(CubeLocation::EdgeLocation(Edge::BL)),
-    //         Faces::FR => Some(CubeLocation::EdgeLocation(Edge::FR)),
-    //         Faces::FL => Some(CubeLocation::EdgeLocation(Edge::FL)),
-    //         _ => None
-    //     }
-    // }
+    pub fn get_sticker_origin(&self, sticker_location: &CubeStickerLocation) -> CubeStickerLocation {
+        let piece = self.cubies[&sticker_location.piece_location];
+        CubeStickerLocation {
+            piece_location: piece.get_original_location(),
+            twist: piece.get_opposite_twist()
+        }
+    }
 }
 
-static SOLVED_CUBIES: [(FaceMask, Cubie); 20] = [
-    (FaceMask::UFR, Cubie::UFR),
-    (FaceMask::UFL, Cubie::UFL),
-    (FaceMask::UBL, Cubie::UBL),
-    (FaceMask::UBR, Cubie::UBR),
-    (FaceMask::DFR, Cubie::DFR),
-    (FaceMask::DFL, Cubie::DFL),
-    (FaceMask::DBL, Cubie::DBL),
-    (FaceMask::DBR, Cubie::DBR),
-    (FaceMask::UR, Cubie::UR),
-    (FaceMask::UF, Cubie::UF),
-    (FaceMask::UL, Cubie::UL),
-    (FaceMask::UB, Cubie::UB),
-    (FaceMask::DR, Cubie::DR),
-    (FaceMask::DF, Cubie::DF),
-    (FaceMask::DL, Cubie::DL),
-    (FaceMask::DB, Cubie::DB),
-    (FaceMask::FR, Cubie::FR),
-    (FaceMask::FL, Cubie::FL),
-    (FaceMask::BL, Cubie::BL),
-    (FaceMask::BR, Cubie::BR),
+static SOLVED_CUBIES: [(CubePieceLocation, CubePiece); 20] = [
+    (CubePieceLocation::new(FaceMask::UFR), CubePiece::UFR),
+    (CubePieceLocation::new(FaceMask::UFL), CubePiece::UFL),
+    (CubePieceLocation::new(FaceMask::UBL), CubePiece::UBL),
+    (CubePieceLocation::new(FaceMask::UBR), CubePiece::UBR),
+    (CubePieceLocation::new(FaceMask::DFR), CubePiece::DFR),
+    (CubePieceLocation::new(FaceMask::DFL), CubePiece::DFL),
+    (CubePieceLocation::new(FaceMask::DBL), CubePiece::DBL),
+    (CubePieceLocation::new(FaceMask::DBR), CubePiece::DBR),
+    (CubePieceLocation::new(FaceMask::UR), CubePiece::UR),
+    (CubePieceLocation::new(FaceMask::UF), CubePiece::UF),
+    (CubePieceLocation::new(FaceMask::UL), CubePiece::UL),
+    (CubePieceLocation::new(FaceMask::UB), CubePiece::UB),
+    (CubePieceLocation::new(FaceMask::DR), CubePiece::DR),
+    (CubePieceLocation::new(FaceMask::DF), CubePiece::DF),
+    (CubePieceLocation::new(FaceMask::DL), CubePiece::DL),
+    (CubePieceLocation::new(FaceMask::DB), CubePiece::DB),
+    (CubePieceLocation::new(FaceMask::FR), CubePiece::FR),
+    (CubePieceLocation::new(FaceMask::FL), CubePiece::FL),
+    (CubePieceLocation::new(FaceMask::BL), CubePiece::BL),
+    (CubePieceLocation::new(FaceMask::BR), CubePiece::BR),
 ];
 
 // ? We could newtype an create CornerCycle and EdgeCycle and validate at compile time that there is no faces/edges/corners in same array
-static CYCLE_U_CORNERS: [FaceMask; 4] = [FaceMask::UFL, FaceMask::UBL, FaceMask::UBR, FaceMask::UFR];
-static CYCLE_U_EDGES: [FaceMask; 4] = [FaceMask::UF, FaceMask::UL, FaceMask::UB, FaceMask::UR];
-static CYCLE_R_CORNERS: [FaceMask; 4] = [FaceMask::UFR, FaceMask::UBR, FaceMask::DBR, FaceMask::DFR];
-static CYCLE_R_EDGES: [FaceMask; 4] = [FaceMask::UR, FaceMask::BR, FaceMask::DR, FaceMask::FR];
-static CYCLE_UP_CORNERS: [FaceMask; 4] = [FaceMask::UFL, FaceMask::UFR, FaceMask::UBR, FaceMask::UBL];
-static CYCLE_UP_EDGES: [FaceMask; 4] = [FaceMask::UF, FaceMask::UR, FaceMask::UB, FaceMask::UL];
-static CYCLE_RP_CORNERS: [FaceMask; 4] = [FaceMask::UFR, FaceMask::DFR, FaceMask::DBR, FaceMask::UBR];
-static CYCLE_RP_EDGES: [FaceMask; 4] = [FaceMask::UR, FaceMask::FR, FaceMask::DR, FaceMask::BR];
+static CYCLE_U_CORNERS: [CubePieceLocation; 4] = [CubePieceLocation::new(FaceMask::UFL), CubePieceLocation::new(FaceMask::UBL), CubePieceLocation::new(FaceMask::UBR), CubePieceLocation::new(FaceMask::UFR)];
+static CYCLE_U_EDGES: [CubePieceLocation; 4] = [CubePieceLocation::new(FaceMask::UF), CubePieceLocation::new(FaceMask::UL), CubePieceLocation::new(FaceMask::UB), CubePieceLocation::new(FaceMask::UR)];
+static CYCLE_R_CORNERS: [CubePieceLocation; 4] = [CubePieceLocation::new(FaceMask::UFR), CubePieceLocation::new(FaceMask::UBR), CubePieceLocation::new(FaceMask::DBR), CubePieceLocation::new(FaceMask::DFR)];
+static CYCLE_R_EDGES: [CubePieceLocation; 4] = [CubePieceLocation::new(FaceMask::UR), CubePieceLocation::new(FaceMask::BR), CubePieceLocation::new(FaceMask::DR), CubePieceLocation::new(FaceMask::FR)];
+static CYCLE_UP_CORNERS: [CubePieceLocation; 4] = [CubePieceLocation::new(FaceMask::UFL), CubePieceLocation::new(FaceMask::UFR), CubePieceLocation::new(FaceMask::UBR), CubePieceLocation::new(FaceMask::UBL)];
+static CYCLE_UP_EDGES: [CubePieceLocation; 4] = [CubePieceLocation::new(FaceMask::UF), CubePieceLocation::new(FaceMask::UR), CubePieceLocation::new(FaceMask::UB), CubePieceLocation::new(FaceMask::UL)];
+static CYCLE_RP_CORNERS: [CubePieceLocation; 4] = [CubePieceLocation::new(FaceMask::UFR), CubePieceLocation::new(FaceMask::DFR), CubePieceLocation::new(FaceMask::DBR), CubePieceLocation::new(FaceMask::UBR)];
+static CYCLE_RP_EDGES: [CubePieceLocation; 4] = [CubePieceLocation::new(FaceMask::UR), CubePieceLocation::new(FaceMask::FR), CubePieceLocation::new(FaceMask::DR), CubePieceLocation::new(FaceMask::BR)];
 static TWIST_CORNERS_SOLVED: [Twist; 4] = [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
 static TWIST_CORNERS_120_240: [Twist; 4] = [Twist::CW_120, Twist::CW_240, Twist::CW_120, Twist::CW_240];
 static TWIST_CORNERS_240_120: [Twist; 4] = [Twist::CW_240, Twist::CW_120, Twist::CW_240, Twist::CW_120];
@@ -233,15 +185,15 @@ mod tests {
         let mut cube = Cube::solved();
         cube.apply_move(CubeMove::U);
 
-        assert_eq!(cube.cubies[&FaceMask::UFL], Cubie::UFR);
-        assert_eq!(cube.cubies[&FaceMask::UFR], Cubie::UBR);
-        assert_eq!(cube.cubies[&FaceMask::UBR], Cubie::UBL);
-        assert_eq!(cube.cubies[&FaceMask::UBL], Cubie::UFL);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UFL)], CubePiece::UFR);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UFR)], CubePiece::UBR);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UBR)], CubePiece::UBL);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UBL)], CubePiece::UFL);
 
-        assert_eq!(cube.cubies[&FaceMask::UF], Cubie::UR);
-        assert_eq!(cube.cubies[&FaceMask::UR], Cubie::UB);
-        assert_eq!(cube.cubies[&FaceMask::UB], Cubie::UL);
-        assert_eq!(cube.cubies[&FaceMask::UL], Cubie::UF);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UF)], CubePiece::UR);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UR)], CubePiece::UB);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UB)], CubePiece::UL);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UL)], CubePiece::UF);
     }
 
     #[test]
@@ -249,15 +201,15 @@ mod tests {
         let mut cube = Cube::solved();
         cube.apply_move(CubeMove::Up);
 
-        assert_eq!(cube.cubies[&FaceMask::UFR], Cubie::UFL);
-        assert_eq!(cube.cubies[&FaceMask::UBR], Cubie::UFR);
-        assert_eq!(cube.cubies[&FaceMask::UBL], Cubie::UBR);
-        assert_eq!(cube.cubies[&FaceMask::UFL], Cubie::UBL);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UFR)], CubePiece::UFL);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UBR)], CubePiece::UFR);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UBL)], CubePiece::UBR);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UFL)], CubePiece::UBL);
 
-        assert_eq!(cube.cubies[&FaceMask::UR], Cubie::UF);
-        assert_eq!(cube.cubies[&FaceMask::UB], Cubie::UR);
-        assert_eq!(cube.cubies[&FaceMask::UL], Cubie::UB);
-        assert_eq!(cube.cubies[&FaceMask::UF], Cubie::UL);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UR)], CubePiece::UF);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UB)], CubePiece::UR);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UL)], CubePiece::UB);
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UF)], CubePiece::UL);
     }
 
     #[test]
@@ -265,15 +217,15 @@ mod tests {
         let mut cube = Cube::solved();
         cube.apply_move(CubeMove::R);
 
-        assert_eq!(cube.cubies[&FaceMask::UBR], Cubie::UFR.twisted(Twist::CW_120));
-        assert_eq!(cube.cubies[&FaceMask::DBR], Cubie::UBR.twisted(Twist::CW_240));
-        assert_eq!(cube.cubies[&FaceMask::DFR], Cubie::DBR.twisted(Twist::CW_120));
-        assert_eq!(cube.cubies[&FaceMask::UFR], Cubie::DFR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UBR)], CubePiece::UFR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::DBR)], CubePiece::UBR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::DFR)], CubePiece::DBR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UFR)], CubePiece::DFR.twisted(Twist::CW_240));
 
-        assert_eq!(cube.cubies[&FaceMask::BR], Cubie::UR.twisted(Twist::FLIPPED));
-        assert_eq!(cube.cubies[&FaceMask::DR], Cubie::BR.twisted(Twist::FLIPPED));
-        assert_eq!(cube.cubies[&FaceMask::FR], Cubie::DR.twisted(Twist::FLIPPED));
-        assert_eq!(cube.cubies[&FaceMask::UR], Cubie::FR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::BR)], CubePiece::UR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::DR)], CubePiece::BR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::FR)], CubePiece::DR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UR)], CubePiece::FR.twisted(Twist::FLIPPED));
     }
 
         #[test]
@@ -281,15 +233,15 @@ mod tests {
         let mut cube = Cube::solved();
         cube.apply_move(CubeMove::Rp);
 
-        assert_eq!(cube.cubies[&FaceMask::UFR], Cubie::UBR.twisted(Twist::CW_120));
-        assert_eq!(cube.cubies[&FaceMask::UBR], Cubie::DBR.twisted(Twist::CW_240));
-        assert_eq!(cube.cubies[&FaceMask::DBR], Cubie::DFR.twisted(Twist::CW_120));
-        assert_eq!(cube.cubies[&FaceMask::DFR], Cubie::UFR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UFR)], CubePiece::UBR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UBR)], CubePiece::DBR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::DBR)], CubePiece::DFR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::DFR)], CubePiece::UFR.twisted(Twist::CW_240));
 
-        assert_eq!(cube.cubies[&FaceMask::UR], Cubie::BR.twisted(Twist::FLIPPED));
-        assert_eq!(cube.cubies[&FaceMask::BR], Cubie::DR.twisted(Twist::FLIPPED));
-        assert_eq!(cube.cubies[&FaceMask::DR], Cubie::FR.twisted(Twist::FLIPPED));
-        assert_eq!(cube.cubies[&FaceMask::FR], Cubie::UR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::UR)], CubePiece::BR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::BR)], CubePiece::DR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::DR)], CubePiece::FR.twisted(Twist::FLIPPED));
+        assert_eq!(cube.cubies[&CubePieceLocation::new(FaceMask::FR)], CubePiece::UR.twisted(Twist::FLIPPED));
     }
 
     #[test]

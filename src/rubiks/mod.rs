@@ -3,6 +3,7 @@ pub mod faces;
 pub mod stickers;
 pub mod solvers;
 pub mod twist;
+pub mod location;
 
-mod cubie;
+mod piece;
 mod cube_constants;
