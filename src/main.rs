@@ -1,10 +1,10 @@
-use crate::rubiks::{cube::{Cube, CubeMove}, faces::FaceMask, location::CubePieceLocation, solvers::pochmann::PochmannSolver, stickers::CubeStickerLocation, twist::Twist};
+use crate::rubiks::solvers::pochmann::PochmannSolver;
+use crate::rubiks::stickers::CubeStickerLocation;
+use crate::rubiks::cube::{Cube, CubeMove::*};
 
 mod rubiks;
 
 fn main() {
-    use CubeMove::*;
-
     let mut cube = Cube::solved();
     cube.apply_moves(&vec![
         R, U, Rp, Up,
@@ -13,8 +13,8 @@ fn main() {
     ]);
 
     let solver = PochmannSolver {
-        buffer_corner: CubeStickerLocation { piece_location: CubePieceLocation::UBL, twist:Twist::SOLVED },
-        buffer_edge: CubeStickerLocation { piece_location: CubePieceLocation::UR, twist:Twist::SOLVED },
+        buffer_corner: CubeStickerLocation::UBL,
+        buffer_edge: CubeStickerLocation::UR,
     };
     let solution = solver.solve(&cube);
 

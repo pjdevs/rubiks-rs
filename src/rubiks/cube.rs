@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 use std::iter::once;
-
-// use crate::rubiks::stickers::{CornerSticker, CubeSticker, EdgeSticker};
 use crate::rubiks::piece::CubePiece;
-use crate::rubiks::faces::FaceMask;
 use crate::rubiks::location::CubePieceLocation;
 use crate::rubiks::stickers::CubeStickerLocation;
 use crate::rubiks::twist::Twist;

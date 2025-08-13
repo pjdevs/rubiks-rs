@@ -1,4 +1,3 @@
-use crate::rubiks::faces::FaceMask;
 use crate::rubiks::location::CubePieceLocation;
 use crate::rubiks::twist::Twist;
 
