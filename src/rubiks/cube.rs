@@ -79,7 +79,7 @@ impl Cube {
                 self.cycle_cubies(&CYCLE_UP_EDGES, &TWIST_EDGES_SOLVED);
             },
             CubeMove::Rp => {
-                self.cycle_cubies(&CYCLE_RP_CORNERS, &TWIST_CORNERS_240_120);
+                self.cycle_cubies(&CYCLE_RP_CORNERS, &TWIST_CORNERS_120_240);
                 self.cycle_cubies(&CYCLE_RP_EDGES, &TWIST_EDGES_FLIP);
             },
         }
@@ -172,7 +172,7 @@ static CYCLE_RP_CORNERS: [CubePieceLocation; 4] = [CubePieceLocation::UFR, CubeP
 static CYCLE_RP_EDGES: [CubePieceLocation; 4] = [CubePieceLocation::UR, CubePieceLocation::FR, CubePieceLocation::DR, CubePieceLocation::BR];
 static TWIST_CORNERS_SOLVED: [Twist; 4] = [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
 static TWIST_CORNERS_120_240: [Twist; 4] = [Twist::CW_120, Twist::CW_240, Twist::CW_120, Twist::CW_240];
-static TWIST_CORNERS_240_120: [Twist; 4] = [Twist::CW_240, Twist::CW_120, Twist::CW_240, Twist::CW_120];
+// static TWIST_CORNERS_240_120: [Twist; 4] = [Twist::CW_240, Twist::CW_120, Twist::CW_240, Twist::CW_120];
 static TWIST_EDGES_SOLVED: [Twist; 4] = [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
 static TWIST_EDGES_FLIP: [Twist; 4] = [Twist::FLIPPED, Twist::FLIPPED, Twist::FLIPPED, Twist::FLIPPED];
 
@@ -233,10 +233,10 @@ mod tests {
         let mut cube = Cube::solved();
         cube.apply_move(CubeMove::Rp);
 
-        assert_eq!(cube.cubies[&CubePieceLocation::UFR], CubePiece::UBR.twisted(Twist::CW_120));
-        assert_eq!(cube.cubies[&CubePieceLocation::UBR], CubePiece::DBR.twisted(Twist::CW_240));
-        assert_eq!(cube.cubies[&CubePieceLocation::DBR], CubePiece::DFR.twisted(Twist::CW_120));
-        assert_eq!(cube.cubies[&CubePieceLocation::DFR], CubePiece::UFR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&CubePieceLocation::UFR], CubePiece::UBR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&CubePieceLocation::UBR], CubePiece::DBR.twisted(Twist::CW_120));
+        assert_eq!(cube.cubies[&CubePieceLocation::DBR], CubePiece::DFR.twisted(Twist::CW_240));
+        assert_eq!(cube.cubies[&CubePieceLocation::DFR], CubePiece::UFR.twisted(Twist::CW_120));
 
         assert_eq!(cube.cubies[&CubePieceLocation::UR], CubePiece::BR.twisted(Twist::FLIPPED));
         assert_eq!(cube.cubies[&CubePieceLocation::BR], CubePiece::DR.twisted(Twist::FLIPPED));

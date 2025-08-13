@@ -63,7 +63,7 @@ impl CubeStickerLocation {
     pub fn to_sticker_name(&self) -> String {
         let number_of_twists = self.twist.number_of_twists();
         let mut faces = self.piece_location.mask().faces();
-        faces.rotate_right(number_of_twists as usize);
+        faces.rotate_left(number_of_twists as usize);
 
         faces.iter().map(|f| f.to_string()).collect()
     }
