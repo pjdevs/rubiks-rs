@@ -24,4 +24,8 @@ impl Twist {
     pub const fn edge_opposite(&self) -> Twist {
         Twist((STICKERS_ON_EDGES - self.0) % STICKERS_ON_EDGES)
     }
+
+    pub const fn number_of_twists(&self) -> u8 {
+        self.0
+    }
 }

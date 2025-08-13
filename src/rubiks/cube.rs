@@ -245,6 +245,21 @@ mod tests {
     }
 
     #[test]
+    fn test_twist() {
+        use CubeMove::*;
+
+        let mut cube = Cube::solved();
+        cube.apply_moves(&vec![
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+        ]);
+
+        assert_eq!(cube.get_piece_at(&CubePieceLocation::new(FaceMask::DBR)).get_twist(), Twist::SOLVED);
+        assert_eq!(cube.get_piece_at(&CubePieceLocation::new(FaceMask::UFR)).get_twist(), Twist::SOLVED);
+    }
+
+    #[test]
     fn sexy_has_no_effect() {
         use CubeMove::*;
 
