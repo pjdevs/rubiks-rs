@@ -1,8 +1,6 @@
-use crate::rubiks::solvers::pochmann::PochmannSolver;
-use crate::rubiks::stickers::CubeStickerLocation;
-use crate::rubiks::cube::{Cube, CubeMove::*};
-
-mod rubiks;
+use rubiks::solvers::pochmann::PochmannSolver;
+use rubiks::stickers::CubeStickerLocation;
+use rubiks::cube::{Cube, CubeMove::*};
 
 fn main() {
     let mut cube = Cube::solved();

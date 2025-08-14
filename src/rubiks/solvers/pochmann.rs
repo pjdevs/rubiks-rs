@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
-use crate::rubiks::cube::Cube;
-use crate::rubiks::location::CubePieceLocation;
-use crate::rubiks::stickers::CubeStickerLocation;
-use crate::rubiks::twist::Twist;
+use crate::cube::Cube;
+use crate::location::CubePieceLocation;
+use crate::stickers::CubeStickerLocation;
+use crate::twist::Twist;
 
 pub struct PochmannSolver {
     pub buffer_corner: CubeStickerLocation,

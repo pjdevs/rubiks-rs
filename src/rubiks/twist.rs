@@ -1,4 +1,4 @@
-use crate::rubiks::cube_constants::*;
+use crate::cube_constants::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Twist(u8);

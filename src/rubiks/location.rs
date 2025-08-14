@@ -1,4 +1,4 @@
-use crate::rubiks::faces::FaceMask;
+use crate::faces::FaceMask;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(transparent)]

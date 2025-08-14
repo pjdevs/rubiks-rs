@@ -1,6 +1,6 @@
 use core::fmt;
 use bitmask_enum::bitmask;
-use crate::rubiks::cube_constants::*;
+use crate::cube_constants::*;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum Face {

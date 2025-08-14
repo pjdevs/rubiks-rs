@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::iter::once;
-use crate::rubiks::piece::CubePiece;
-use crate::rubiks::location::CubePieceLocation;
-use crate::rubiks::stickers::CubeStickerLocation;
-use crate::rubiks::twist::Twist;
+use crate::piece::CubePiece;
+use crate::location::CubePieceLocation;
+use crate::stickers::CubeStickerLocation;
+use crate::twist::Twist;
 
 // const CORNER_STICKERS: [[CornerSticker; STICKERS_ON_CORNERS as usize]; NUMBER_OF_CORNERS as usize] = [
 //     [CornerSticker::UFR, CornerSticker::FRU, CornerSticker::RFU],

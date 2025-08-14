@@ -1,5 +1,5 @@
-use crate::rubiks::location::CubePieceLocation;
-use crate::rubiks::twist::Twist;
+use crate::location::CubePieceLocation;
+use crate::twist::Twist;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CubePiece {
