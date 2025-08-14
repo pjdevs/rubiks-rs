@@ -73,7 +73,7 @@ impl CubePiece {
                 self.twist.corner_add(&twist)
             } else {
                 self.twist.edge_add(&twist)
-            }
+            },
         }
     }
 
@@ -82,7 +82,7 @@ impl CubePiece {
 
         CubePiece {
             original_location: location,
-            twist: Twist::SOLVED
+            twist: Twist::SOLVED,
         }
     }
 
@@ -91,7 +91,7 @@ impl CubePiece {
 
         CubePiece {
             original_location: location,
-            twist: Twist::SOLVED
+            twist: Twist::SOLVED,
         }
     }
 }
