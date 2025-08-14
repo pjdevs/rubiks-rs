@@ -4,7 +4,7 @@ use rubiks::stickers::CubeStickerLocation;
 
 fn main() {
     let mut cube = Cube::solved();
-    cube.apply_moves(&vec![R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up]);
+    cube.apply_moves(&vec![R, U, Rp, Up]);
 
     let solver = PochmannSolver {
         buffer_corner: CubeStickerLocation::UBL,
@@ -13,4 +13,5 @@ fn main() {
     let solution = solver.solve(&cube);
 
     println!("C: {:?}", solution.corner_cycles);
+    println!("E: {:?}", solution.edge_cycles);
 }

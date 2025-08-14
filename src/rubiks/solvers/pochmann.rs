@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use crate::cube::Cube;
 use crate::location::CubePieceLocation;
+use crate::piece::CubePiece;
 use crate::stickers::CubeStickerLocation;
 use crate::twist::Twist;
 
@@ -17,29 +18,30 @@ pub struct PochmannSolution {
 
 impl PochmannSolver {
     pub fn solve(&self, cube: &Cube) -> PochmannSolution {
-        let corner_cycles = self.solve_corners_v2(cube);
+        let corner_cycles = Self::solve_pieces(cube, &self.buffer_corner);
+        let edge_cycles = Self::solve_pieces(cube, &self.buffer_edge);
 
         PochmannSolution {
             corner_cycles,
-            edge_cycles: vec![]
+            edge_cycles
         }
     }
 
-    fn solve_corners_v2(&self, cube: &Cube) -> Vec<Vec<CubeStickerLocation>> {
+    fn solve_pieces(cube: &Cube, buffer: &CubeStickerLocation) -> Vec<Vec<CubeStickerLocation>> {
         let mut solved_locations = HashSet::from([
-            self.buffer_corner.piece_location
+            buffer.piece_location
         ]);
         let mut cycles = Vec::new();
 
         // Start with the buffer, then continue with unsolved corners
-        let mut next_start = Some(self.buffer_corner);
+        let mut next_start = Some(*buffer);
 
         while let Some(start_location) = next_start {
             println!("Cycle {:?}", start_location);
 
             // Build the cycle starting from `start`
             let mut current_cycle = Vec::new();
-            for (next_location, does_solve) in PochmannSolver::iter_single_cycle(cube, &start_location, &self.buffer_corner) {
+            for (next_location, does_solve) in PochmannSolver::iter_single_cycle(cube, &start_location, &buffer) {
                 println!("    {:?}", next_location);
                 current_cycle.push(next_location);
 
@@ -51,7 +53,7 @@ impl PochmannSolver {
             cycles.push(current_cycle);
 
             // Find the next unsolved corner
-            next_start = PochmannSolver::find_next_unsolved_sticker(cube, &solved_locations);
+            next_start = PochmannSolver::find_next_unsolved_sticker(cube, &solved_locations, buffer);
         }
         cycles
     }
@@ -81,9 +83,16 @@ impl PochmannSolver {
         )
     }
 
-    fn find_next_unsolved_sticker(cube: &Cube, solved_locations: &HashSet<CubePieceLocation>) -> Option<CubeStickerLocation> {
-        cube
-            .iter_corners()
+    fn find_next_unsolved_sticker(cube: &Cube, solved_locations: &HashSet<CubePieceLocation>, buffer: &CubeStickerLocation) -> Option<CubeStickerLocation> {
+        if buffer.piece_location.is_corner() {
+            Self::filter_unsolved_pieces(cube.iter_corners(), solved_locations)
+        } else {
+            Self::filter_unsolved_pieces(cube.iter_edges(), solved_locations)
+        }
+    }
+
+    fn filter_unsolved_pieces<'a>(mut it: impl Iterator<Item = (&'a CubePieceLocation, &'a CubePiece)>, solved_locations: &HashSet<CubePieceLocation>,) -> Option<CubeStickerLocation> {
+        it
             .find(|(location, piece)| !solved_locations.contains(location) && piece.get_original_location() != **location)
             .map(|(location, _)| CubeStickerLocation { piece_location: *location, twist: Twist::SOLVED })
     }
