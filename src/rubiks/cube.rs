@@ -1,8 +1,7 @@
-use crate::location::CubePieceLocation;
-use crate::piece::CubePiece;
-use crate::stickers::CubeStickerLocation;
+use crate::cube_constants::{CORNER_NUMBER, EDGE_NUMBER};
+use crate::location::{self, PieceLocation};
+use crate::piece::{Corner, Edge, Piece, PieceState};
 use crate::twist::Twist;
-use std::collections::HashMap;
 use std::iter::once;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,11 +24,45 @@ impl CubeMove {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Cube {
-    cubies: HashMap<CubePieceLocation, CubePiece>,
+pub struct CubeState {
+    corner_locations: [PieceLocation; Self::CORNER_NUMBER],
+    corner_twists: [Twist; Self::CORNER_NUMBER],
+    edge_locations: [PieceLocation; Self::EDGE_NUMBER],
+    edge_twists: [Twist; Self::CORNER_NUMBER],
 }
 
-impl Cube {
+impl CubeState {
+    pub const STICKERS_ON_CORNERS: u8 = 3;
+    pub const STICKERS_ON_EDGES: u8 = 2;
+    pub const EDGE_NUMBER: usize = 12;
+    pub const CORNER_NUMBER: usize = 8;
+
+    pub const CORNER_PIECES: [Corner; 8] = [
+        Corner::UFR,
+        Corner::UFL,
+        Corner::UBR,
+        Corner::UBL,
+        Corner::DFR,
+        Corner::DFL,
+        Corner::DBR,
+        Corner::DLB,
+    ];
+
+    pub const EDGE_PIECES: [Edge; 12] = [
+        Edge::UF,
+        Edge::UL,
+        Edge::UB,
+        Edge::UR,
+        Edge::DF,
+        Edge::DL,
+        Edge::DB,
+        Edge::DR,
+        Edge::FR,
+        Edge::FL,
+        Edge::BR,
+        Edge::BL,
+    ];
+
     pub fn apply_moves(&mut self, moves: &Vec<CubeMove>) {
         for cube_move in moves {
             self.apply_move(*cube_move);
@@ -39,31 +72,31 @@ impl Cube {
     fn apply_move(&mut self, cube_move: CubeMove) {
         match cube_move {
             CubeMove::U => {
-                self.cycle_cubies(&CYCLE_U_CORNERS, &TWIST_CORNERS_SOLVED);
-                self.cycle_cubies(&CYCLE_U_EDGES, &TWIST_EDGES_SOLVED);
+                self.cycle_pieces(&CYCLE_U_CORNERS, &TWIST_CORNERS_SOLVED);
+                self.cycle_pieces(&CYCLE_U_EDGES, &TWIST_EDGES_SOLVED);
             }
             CubeMove::R => {
-                self.cycle_cubies(&CYCLE_R_CORNERS, &TWIST_CORNERS_120_240);
-                self.cycle_cubies(&CYCLE_R_EDGES, &TWIST_EDGES_FLIP);
+                self.cycle_pieces(&CYCLE_R_CORNERS, &TWIST_CORNERS_120_240);
+                self.cycle_pieces(&CYCLE_R_EDGES, &TWIST_EDGES_FLIP);
             }
             CubeMove::Up => {
-                self.cycle_cubies(&CYCLE_UP_CORNERS, &TWIST_CORNERS_SOLVED);
-                self.cycle_cubies(&CYCLE_UP_EDGES, &TWIST_EDGES_SOLVED);
+                self.cycle_pieces(&CYCLE_UP_CORNERS, &TWIST_CORNERS_SOLVED);
+                self.cycle_pieces(&CYCLE_UP_EDGES, &TWIST_EDGES_SOLVED);
             }
             CubeMove::Rp => {
-                self.cycle_cubies(&CYCLE_RP_CORNERS, &TWIST_CORNERS_120_240);
-                self.cycle_cubies(&CYCLE_RP_EDGES, &TWIST_EDGES_FLIP);
+                self.cycle_pieces(&CYCLE_RP_CORNERS, &TWIST_CORNERS_120_240);
+                self.cycle_pieces(&CYCLE_RP_EDGES, &TWIST_EDGES_FLIP);
             }
         }
     }
 
-    fn cycle_cubies(
+    fn cycle_pieces(
         &mut self,
-        locations: &'static [CubePieceLocation; 4],
+        locations: &'static [PieceLocation; 4],
         twists: &'static [Twist; 4],
     ) {
         let first_position = locations[0];
-        let mut last_cubie = self.cubies[&first_position];
+        let mut last_piece = self.get_piece_at(&first_position);
 
         for (target_position, twist) in locations
             .iter()
@@ -71,51 +104,64 @@ impl Cube {
             .chain(once(&first_position))
             .zip(twists)
         {
-            let target_cubie = self.cubies[target_position];
+            let target_piece = self.get_piece_at(target_position);
 
             // save which one was here before permutation
-            let cubie_to_send = last_cubie;
-            last_cubie = target_cubie;
+            let cubie_to_send = last_piece;
+            last_piece = target_piece;
 
             // do the permutation
-            self.cubies
-                .insert(*target_position, cubie_to_send.twisted(*twist));
+            self.set_piece_at(target_position, cubie_to_send.twisted(*twist));
         }
     }
 
-    pub fn is_solved(&self) -> bool {
-        for (location, expected_cubie) in &SOLVED_CUBIES {
-            if self.cubies[location] != *expected_cubie {
-                return false;
-            }
-        }
-
-        true
+    pub const  fn is_solved(&self) -> bool {
+        false
     }
 
-    pub fn iter_corners(&self) -> impl Iterator<Item = (&CubePieceLocation, &CubePiece)> {
-        self.cubies.iter().filter(|(_, piece)| piece.is_corner())
+    pub fn iter_corners(&self) -> impl Iterator<Item = (PieceLocation, CubePiece)> {
+        self.corner_locations.iter().enumerate().map(|(index, piece)| { (PieceLocation::BL, *piece) })
     }
 
-    pub fn iter_edges(&self) -> impl Iterator<Item = (&CubePieceLocation, &CubePiece)> {
-        self.cubies.iter().filter(|(_, piece)| piece.is_edge())
+    pub fn iter_edges(&self) -> impl Iterator<Item = (PieceLocation, CubePiece)> {
+        self.edge_locations.iter().enumerate().map(|(index, piece)| { (PieceLocation::BL, *piece) })
     }
 
-    pub fn solved() -> Cube {
-        Cube {
-            cubies: HashMap::from(SOLVED_CUBIES),
+    pub fn solved() -> CubeState {
+        CubeState {
+            corner_locations: [CubePiece::UFR; 8],
+            edge_locations: [CubePiece::BL; 12],
         }
     }
 
-    pub fn get_piece_at(&self, sticker_location: &CubePieceLocation) -> CubePiece {
-        self.cubies[sticker_location]
+    pub fn get_corner_at(&self, location_index: usize) -> PieceState<> {
+        let piece_index = self.corner_positions[location_index];
+        let orientation = self.corner_twists[location_index];
+        (Self::CORNER_PIECES[piece_index], orientation)
+    }
+
+    pub fn get_edge_at(&self, location_index: usize) -> (Piece<2>, Twist) {
+        let piece_index = self.edge_positions[location_index];
+        let orientation = self.edge_twists[location_index];
+        (Self::EDGE_PIECES[piece_index], orientation)
+    }
+
+    const fn set_piece_at(&mut self, sticker_location: &PieceLocation, piece: CubePiece) {
+        let target_index = sticker_location.get_index();
+        let old_piece = if piece.is_corner() {
+            &mut self.corner_locations[target_index]
+        } else {
+            &mut self.edge_locations[target_index]
+        };
+        assert!(old_piece.is_corner() == piece.is_corner());
+        *old_piece = piece;
     }
 
     pub fn get_sticker_origin(
         &self,
         sticker_location: &CubeStickerLocation,
     ) -> CubeStickerLocation {
-        let piece = self.cubies[&sticker_location.piece_location];
+        let piece = self.get_piece_at(&sticker_location.piece_location);
         CubeStickerLocation {
             piece_location: piece.get_original_location(),
             twist: piece.get_opposite_twist(),
@@ -123,77 +169,54 @@ impl Cube {
     }
 }
 
-static SOLVED_CUBIES: [(CubePieceLocation, CubePiece); 20] = [
-    (CubePieceLocation::UFR, CubePiece::UFR),
-    (CubePieceLocation::UFL, CubePiece::UFL),
-    (CubePieceLocation::UBL, CubePiece::UBL),
-    (CubePieceLocation::UBR, CubePiece::UBR),
-    (CubePieceLocation::DFR, CubePiece::DFR),
-    (CubePieceLocation::DFL, CubePiece::DFL),
-    (CubePieceLocation::DBL, CubePiece::DBL),
-    (CubePieceLocation::DBR, CubePiece::DBR),
-    (CubePieceLocation::UR, CubePiece::UR),
-    (CubePieceLocation::UF, CubePiece::UF),
-    (CubePieceLocation::UL, CubePiece::UL),
-    (CubePieceLocation::UB, CubePiece::UB),
-    (CubePieceLocation::DR, CubePiece::DR),
-    (CubePieceLocation::DF, CubePiece::DF),
-    (CubePieceLocation::DL, CubePiece::DL),
-    (CubePieceLocation::DB, CubePiece::DB),
-    (CubePieceLocation::FR, CubePiece::FR),
-    (CubePieceLocation::FL, CubePiece::FL),
-    (CubePieceLocation::BL, CubePiece::BL),
-    (CubePieceLocation::BR, CubePiece::BR),
-];
-
 // ? We could newtype an create CornerCycle and EdgeCycle and validate at compile time that there is no faces/edges/corners in same array
-static CYCLE_U_CORNERS: [CubePieceLocation; 4] = [
-    CubePieceLocation::UFL,
-    CubePieceLocation::UBL,
-    CubePieceLocation::UBR,
-    CubePieceLocation::UFR,
+static CYCLE_U_CORNERS: [PieceLocation; 4] = [
+    location::UFL,
+    location::UBL,
+    location::UBR,
+    location::UFR,
 ];
-static CYCLE_U_EDGES: [CubePieceLocation; 4] = [
-    CubePieceLocation::UF,
-    CubePieceLocation::UL,
-    CubePieceLocation::UB,
-    CubePieceLocation::UR,
+static CYCLE_U_EDGES: [PieceLocation; 4] = [
+    location::UF,
+    location::UL,
+    location::UB,
+    location::UR,
 ];
-static CYCLE_R_CORNERS: [CubePieceLocation; 4] = [
-    CubePieceLocation::UFR,
-    CubePieceLocation::UBR,
-    CubePieceLocation::DBR,
-    CubePieceLocation::DFR,
+static CYCLE_R_CORNERS: [PieceLocation; 4] = [
+    location::UFR,
+    location::UBR,
+    location::DBR,
+    location::DFR,
 ];
-static CYCLE_R_EDGES: [CubePieceLocation; 4] = [
-    CubePieceLocation::UR,
-    CubePieceLocation::BR,
-    CubePieceLocation::DR,
-    CubePieceLocation::FR,
+static CYCLE_R_EDGES: [PieceLocation; 4] = [
+    location::UR,
+    location::BR,
+    location::DR,
+    location::FR,
 ];
-static CYCLE_UP_CORNERS: [CubePieceLocation; 4] = [
-    CubePieceLocation::UFL,
-    CubePieceLocation::UFR,
-    CubePieceLocation::UBR,
-    CubePieceLocation::UBL,
+static CYCLE_UP_CORNERS: [PieceLocation; 4] = [
+    location::UFL,
+    location::UFR,
+    location::UBR,
+    location::UBL,
 ];
-static CYCLE_UP_EDGES: [CubePieceLocation; 4] = [
-    CubePieceLocation::UF,
-    CubePieceLocation::UR,
-    CubePieceLocation::UB,
-    CubePieceLocation::UL,
+static CYCLE_UP_EDGES: [PieceLocation; 4] = [
+    location::UF,
+    location::UR,
+    location::UB,
+    location::UL,
 ];
-static CYCLE_RP_CORNERS: [CubePieceLocation; 4] = [
-    CubePieceLocation::UFR,
-    CubePieceLocation::DFR,
-    CubePieceLocation::DBR,
-    CubePieceLocation::UBR,
+static CYCLE_RP_CORNERS: [PieceLocation; 4] = [
+    location::UFR,
+    location::DFR,
+    location::DBR,
+    location::UBR,
 ];
-static CYCLE_RP_EDGES: [CubePieceLocation; 4] = [
-    CubePieceLocation::UR,
-    CubePieceLocation::FR,
-    CubePieceLocation::DR,
-    CubePieceLocation::BR,
+static CYCLE_RP_EDGES: [PieceLocation; 4] = [
+    location::UR,
+    location::FR,
+    location::DR,
+    location::BR,
 ];
 static TWIST_CORNERS_SOLVED: [Twist; 4] =
     [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
@@ -215,112 +238,112 @@ mod tests {
 
     #[test]
     fn test_move_u() {
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_move(CubeMove::U);
 
-        assert_eq!(cube.cubies[&CubePieceLocation::UFL], CubePiece::UFR);
-        assert_eq!(cube.cubies[&CubePieceLocation::UFR], CubePiece::UBR);
-        assert_eq!(cube.cubies[&CubePieceLocation::UBR], CubePiece::UBL);
-        assert_eq!(cube.cubies[&CubePieceLocation::UBL], CubePiece::UFL);
+        assert_eq!(cube.get_piece_at(&location::UFL), CubePiece::UFR);
+        assert_eq!(cube.get_piece_at(&location::UFR), CubePiece::UBR);
+        assert_eq!(cube.get_piece_at(&location::UBR), CubePiece::UBL);
+        assert_eq!(cube.get_piece_at(&location::UBL), CubePiece::UFL);
 
-        assert_eq!(cube.cubies[&CubePieceLocation::UF], CubePiece::UR);
-        assert_eq!(cube.cubies[&CubePieceLocation::UR], CubePiece::UB);
-        assert_eq!(cube.cubies[&CubePieceLocation::UB], CubePiece::UL);
-        assert_eq!(cube.cubies[&CubePieceLocation::UL], CubePiece::UF);
+        assert_eq!(cube.get_piece_at(&location::UF), CubePiece::UR);
+        assert_eq!(cube.get_piece_at(&location::UR), CubePiece::UB);
+        assert_eq!(cube.get_piece_at(&location::UB), CubePiece::UL);
+        assert_eq!(cube.get_piece_at(&location::UL), CubePiece::UF);
     }
 
     #[test]
     fn test_move_up() {
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_move(CubeMove::Up);
 
-        assert_eq!(cube.cubies[&CubePieceLocation::UFR], CubePiece::UFL);
-        assert_eq!(cube.cubies[&CubePieceLocation::UBR], CubePiece::UFR);
-        assert_eq!(cube.cubies[&CubePieceLocation::UBL], CubePiece::UBR);
-        assert_eq!(cube.cubies[&CubePieceLocation::UFL], CubePiece::UBL);
+        assert_eq!(cube.get_piece_at(&location::UFR), CubePiece::UFL);
+        assert_eq!(cube.get_piece_at(&location::UBR), CubePiece::UFR);
+        assert_eq!(cube.get_piece_at(&location::UBL), CubePiece::UBR);
+        assert_eq!(cube.get_piece_at(&location::UFL), CubePiece::UBL);
 
-        assert_eq!(cube.cubies[&CubePieceLocation::UR], CubePiece::UF);
-        assert_eq!(cube.cubies[&CubePieceLocation::UB], CubePiece::UR);
-        assert_eq!(cube.cubies[&CubePieceLocation::UL], CubePiece::UB);
-        assert_eq!(cube.cubies[&CubePieceLocation::UF], CubePiece::UL);
+        assert_eq!(cube.get_piece_at(&location::UR), CubePiece::UF);
+        assert_eq!(cube.get_piece_at(&location::UB), CubePiece::UR);
+        assert_eq!(cube.get_piece_at(&location::UL), CubePiece::UB);
+        assert_eq!(cube.get_piece_at(&location::UF), CubePiece::UL);
     }
 
     #[test]
     fn test_move_r() {
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_move(CubeMove::R);
 
         assert_eq!(
-            cube.cubies[&CubePieceLocation::UBR],
+            cube.get_piece_at(&location::UBR),
             CubePiece::UFR.twisted(Twist::CW_120)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::DBR],
+            cube..get_piece_at(&location::DBR),
             CubePiece::UBR.twisted(Twist::CW_240)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::DFR],
+            cube.get_piece_at(&location::DFR),
             CubePiece::DBR.twisted(Twist::CW_120)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::UFR],
+            cube.get_piece_at(&location::UFR),
             CubePiece::DFR.twisted(Twist::CW_240)
         );
 
         assert_eq!(
-            cube.cubies[&CubePieceLocation::BR],
+            cube.get_piece_at(&location::BR),
             CubePiece::UR.twisted(Twist::FLIPPED)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::DR],
+            cube.get_piece_at(&location::DR),
             CubePiece::BR.twisted(Twist::FLIPPED)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::FR],
+            cube.get_piece_at(&location::FR),
             CubePiece::DR.twisted(Twist::FLIPPED)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::UR],
+            cube.get_piece_at(&location::UR),
             CubePiece::FR.twisted(Twist::FLIPPED)
         );
     }
 
     #[test]
     fn test_move_rp() {
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_move(CubeMove::Rp);
 
         assert_eq!(
-            cube.cubies[&CubePieceLocation::UFR],
+            cube.get_piece_at(&location::UFR),
             CubePiece::UBR.twisted(Twist::CW_240)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::UBR],
+            cube.get_piece_at(&location::UBR),
             CubePiece::DBR.twisted(Twist::CW_120)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::DBR],
+            cube.get_piece_at(&location::DBR),
             CubePiece::DFR.twisted(Twist::CW_240)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::DFR],
+            cube.get_piece_at(&location::DFR),
             CubePiece::UFR.twisted(Twist::CW_120)
         );
 
         assert_eq!(
-            cube.cubies[&CubePieceLocation::UR],
+            cube.get_piece_at(&location::UR),
             CubePiece::BR.twisted(Twist::FLIPPED)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::BR],
+            cube.get_piece_at(&location::BR),
             CubePiece::DR.twisted(Twist::FLIPPED)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::DR],
+            cube.get_piece_at(&location::DR),
             CubePiece::FR.twisted(Twist::FLIPPED)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::FR],
+            cube.get_piece_at(&location::FR),
             CubePiece::UR.twisted(Twist::FLIPPED)
         );
     }
@@ -329,7 +352,7 @@ mod tests {
     fn test_twist_r2() {
         use CubeMove::*;
 
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_move(R);
         cube.apply_move(R);
 
@@ -343,7 +366,7 @@ mod tests {
     fn test_r4() {
         use CubeMove::*;
 
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_move(R);
         cube.apply_move(R);
         cube.apply_move(R);
@@ -356,7 +379,7 @@ mod tests {
     fn test_r_rp() {
         use CubeMove::*;
 
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_move(R);
         cube.apply_move(Rp);
 
@@ -367,11 +390,11 @@ mod tests {
     fn test_3_sexy_twist() {
         use CubeMove::*;
 
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_moves(&vec![R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up]);
 
         assert_eq!(
-            cube.get_piece_at(&CubePieceLocation::UFR).get_twist(),
+            cube.get_piece_at(&location::UFR).get_twist(),
             Twist::SOLVED
         );
     }
@@ -380,10 +403,10 @@ mod tests {
     fn test_3_sexy_has_no_effect() {
         use CubeMove::*;
 
-        let mut cube = Cube::solved();
+        let mut cube = CubeState::solved();
         cube.apply_moves(&vec![
             R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up,
         ]);
-        assert_eq!(cube, Cube::solved());
+        assert_eq!(cube, CubeState::solved());
     }
 }

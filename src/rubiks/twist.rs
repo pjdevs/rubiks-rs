@@ -1,6 +1,7 @@
 use crate::cube_constants::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[repr(transparent)]
 pub struct Twist(u8);
 
 impl Twist {

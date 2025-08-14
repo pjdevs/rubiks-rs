@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use crate::cube::Cube;
-use crate::location::CubePieceLocation;
+use crate::cube::CubeState;
+use crate::location::PieceLocation;
 use crate::stickers::CubeStickerLocation;
 use crate::twist::Twist;
 
@@ -16,7 +16,7 @@ pub struct PochmannSolution {
 }
 
 impl PochmannSolver {
-    pub fn solve(&self, cube: &Cube) -> PochmannSolution {
+    pub fn solve(&self, cube: &CubeState) -> PochmannSolution {
         let corner_cycles = self.solve_corners_v2(cube);
 
         PochmannSolution {
@@ -25,7 +25,7 @@ impl PochmannSolver {
         }
     }
 
-    fn solve_corners_v2(&self, cube: &Cube) -> Vec<Vec<CubeStickerLocation>> {
+    fn solve_corners_v2(&self, cube: &CubeState) -> Vec<Vec<CubeStickerLocation>> {
         let mut solved_locations = HashSet::from([
             self.buffer_corner.piece_location
         ]);
@@ -56,7 +56,7 @@ impl PochmannSolver {
         cycles
     }
 
-    fn iter_single_cycle(cube: &Cube, start: &CubeStickerLocation, buffer: &CubeStickerLocation) -> impl Iterator<Item = (CubeStickerLocation, bool)> {
+    fn iter_single_cycle(cube: &CubeState, start: &CubeStickerLocation, buffer: &CubeStickerLocation) -> impl Iterator<Item = (CubeStickerLocation, bool)> {
         std::iter::successors(
             Some(
                 if start.piece_location == buffer.piece_location {
@@ -81,10 +81,10 @@ impl PochmannSolver {
         )
     }
 
-    fn find_next_unsolved_sticker(cube: &Cube, solved_locations: &HashSet<CubePieceLocation>) -> Option<CubeStickerLocation> {
+    fn find_next_unsolved_sticker(cube: &CubeState, solved_locations: &HashSet<PieceLocation>) -> Option<CubeStickerLocation> {
         cube
             .iter_corners()
-            .find(|(location, piece)| !solved_locations.contains(location) && piece.get_original_location() != **location)
-            .map(|(location, _)| CubeStickerLocation { piece_location: *location, twist: Twist::SOLVED })
+            .find(|(location, piece)| !solved_locations.contains(location) && piece.get_original_location() != *location)
+            .map(|(location, _)| CubeStickerLocation { piece_location: location, twist: Twist::SOLVED })
     }
 }

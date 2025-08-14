@@ -1,9 +1,9 @@
-use rubiks::cube::{Cube, CubeMove::*};
+use rubiks::cube::{CubeState, CubeMove::*};
 use rubiks::solvers::pochmann::PochmannSolver;
 use rubiks::stickers::CubeStickerLocation;
 
 fn main() {
-    let mut cube = Cube::solved();
+    let mut cube = CubeState::solved();
     cube.apply_moves(&vec![R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up]);
 
     let solver = PochmannSolver {

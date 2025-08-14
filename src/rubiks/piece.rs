@@ -1,97 +1,56 @@
-use crate::location::CubePieceLocation;
-use crate::twist::Twist;
+use crate::{faces::Face, twist::Twist};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct CubePiece {
-    original_location: CubePieceLocation,
-    twist: Twist,
+#[derive(Clone, Copy, Debug)]
+pub struct Piece<const FACES: usize> {
+    stickers: [Face; FACES],
 }
 
-impl CubePiece {
-    // ? Could only use location and from_location but keep for helper ?
-    pub const UFR: CubePiece = CubePiece::corner(CubePieceLocation::UFR);
-    pub const UFL: CubePiece = CubePiece::corner(CubePieceLocation::UFL);
-    pub const UBL: CubePiece = CubePiece::corner(CubePieceLocation::UBL);
-    pub const UBR: CubePiece = CubePiece::corner(CubePieceLocation::UBR);
-    pub const DFR: CubePiece = CubePiece::corner(CubePieceLocation::DFR);
-    pub const DFL: CubePiece = CubePiece::corner(CubePieceLocation::DFL);
-    pub const DBL: CubePiece = CubePiece::corner(CubePieceLocation::DBL);
-    pub const DBR: CubePiece = CubePiece::corner(CubePieceLocation::DBR);
-    pub const UR: CubePiece = CubePiece::edge(CubePieceLocation::UR);
-    pub const UF: CubePiece = CubePiece::edge(CubePieceLocation::UF);
-    pub const UL: CubePiece = CubePiece::edge(CubePieceLocation::UL);
-    pub const UB: CubePiece = CubePiece::edge(CubePieceLocation::UB);
-    pub const DR: CubePiece = CubePiece::edge(CubePieceLocation::DR);
-    pub const DF: CubePiece = CubePiece::edge(CubePieceLocation::DF);
-    pub const DL: CubePiece = CubePiece::edge(CubePieceLocation::DL);
-    pub const DB: CubePiece = CubePiece::edge(CubePieceLocation::DB);
-    pub const FR: CubePiece = CubePiece::edge(CubePieceLocation::FR);
-    pub const FL: CubePiece = CubePiece::edge(CubePieceLocation::FL);
-    pub const BL: CubePiece = CubePiece::edge(CubePieceLocation::BL);
-    pub const BR: CubePiece = CubePiece::edge(CubePieceLocation::BR);
-
-    pub const fn from_location(location: CubePieceLocation) -> Self {
-        if location.is_corner() {
-            Self::corner(location)
-        } else {
-            Self::edge(location)
-        }
+impl<const FACES: usize> Piece<FACES> {
+    const fn new(stickers: [Face; FACES]) -> Piece<FACES> {
+        Self { stickers }
     }
 
-    pub fn is_solved(&self, location: &CubePieceLocation) -> bool {
-        self.original_location == *location && self.twist == Twist::SOLVED
+    pub const fn is_corner() -> bool {
+        FACES == 3
     }
 
-    pub const fn get_original_location(&self) -> CubePieceLocation {
-        self.original_location
+    pub const fn is_edge() -> bool {
+        FACES == 2
     }
+}
 
-    pub const fn get_twist(&self) -> Twist {
-        self.twist
-    }
+pub struct PieceState<const FACES: usize> {
+    pub piece: Piece<FACES>,
+    pub twist: Twist,
+}
 
-    pub fn get_opposite_twist(&self) -> Twist {
-        if self.is_corner() {
-            self.twist.corner_opposite()
-        } else {
-            self.twist.edge_opposite()
-        }
-    }
+pub type Corner = Piece<3>;
+pub type Edge = Piece<2>;
+pub type CornerState = PieceState<3>;
+pub type EdgeState = PieceState<2>;
 
-    pub const fn is_corner(&self) -> bool {
-        self.original_location.is_corner()
-    }
+impl Corner {
+        pub const UFR: Corner = Corner::new([Face::U, Face::F, Face::R]); 
+        pub const UFL: Corner = Corner::new([Face::U, Face::L, Face::F]); 
+        pub const UBR: Corner = Corner::new([Face::U, Face::B, Face::R]); 
+        pub const UBL: Corner = Corner::new([Face::U, Face::L, Face::B]); 
+        pub const DFR: Corner = Corner::new([Face::D, Face::F, Face::R]); 
+        pub const DFL: Corner = Corner::new([Face::D, Face::L, Face::F]); 
+        pub const DBR: Corner = Corner::new([Face::D, Face::B, Face::R]); 
+        pub const DLB: Corner = Corner::new([Face::D, Face::L, Face::B]); 
+}
 
-    pub const fn is_edge(&self) -> bool {
-        self.original_location.is_edge()
-    }
-
-    pub const fn twisted(&self, twist: Twist) -> CubePiece {
-        CubePiece {
-            original_location: self.original_location,
-            twist: if self.is_corner() {
-                self.twist.corner_add(&twist)
-            } else {
-                self.twist.edge_add(&twist)
-            },
-        }
-    }
-
-    const fn corner(location: CubePieceLocation) -> CubePiece {
-        assert!(location.is_corner());
-
-        CubePiece {
-            original_location: location,
-            twist: Twist::SOLVED,
-        }
-    }
-
-    const fn edge(location: CubePieceLocation) -> CubePiece {
-        assert!(location.is_edge());
-
-        CubePiece {
-            original_location: location,
-            twist: Twist::SOLVED,
-        }
-    }
+impl Edge {
+    pub const UF: Edge = Piece::new([Face::U, Face::F]);
+    pub const UL: Edge = Piece::new([Face::U, Face::L]);
+    pub const UB: Edge = Piece::new([Face::U, Face::B]);
+    pub const UR: Edge = Piece::new([Face::U, Face::R]);
+    pub const DF: Edge = Piece::new([Face::D, Face::F]);
+    pub const DL: Edge = Piece::new([Face::D, Face::L]);
+    pub const DB: Edge = Piece::new([Face::D, Face::B]);
+    pub const DR: Edge = Piece::new([Face::D, Face::R]);
+    pub const FR: Edge = Piece::new([Face::F, Face::R]);
+    pub const FL: Edge = Piece::new([Face::F, Face::L]);
+    pub const BR: Edge = Piece::new([Face::B, Face::R]);
+    pub const BL: Edge = Piece::new([Face::B, Face::L]);
 }

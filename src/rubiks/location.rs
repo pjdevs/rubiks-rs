@@ -1,53 +1,26 @@
-use crate::faces::FaceMask;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct PieceLocation(usize);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(transparent)]
-pub struct CubePieceLocation(FaceMask);
-
-impl CubePieceLocation {
-    pub const UB: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::B));
-    pub const UR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::R));
-    pub const UF: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::F));
-    pub const UL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::L));
-    pub const DB: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::B));
-    pub const DR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::R));
-    pub const DF: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::L));
-    pub const DL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F));
-    pub const BR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::B.or(FaceMask::R));
-    pub const BL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::B.or(FaceMask::L));
-    pub const FR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::F.or(FaceMask::R));
-    pub const FL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::F.or(FaceMask::L));
-    pub const UFR: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::F).or(FaceMask::R));
-    pub const UFL: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::F).or(FaceMask::L));
-    pub const UBL: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::B).or(FaceMask::L));
-    pub const UBR: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::B).or(FaceMask::R));
-    pub const DFR: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F).or(FaceMask::R));
-    pub const DFL: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F).or(FaceMask::L));
-    pub const DBL: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::B).or(FaceMask::L));
-    pub const DBR: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::B).or(FaceMask::R));
-
-    const fn from_mask(mask: FaceMask) -> CubePieceLocation {
-        assert!(mask.is_corner() || mask.is_edge());
-        Self(mask)
-    }
-
-    pub const fn mask(self) -> FaceMask {
-        self.0
-    }
-
-    pub const fn is_corner(&self) -> bool {
-        self.0.is_corner()
-    }
-
-    pub const fn is_edge(&self) -> bool {
-        self.0.is_edge()
-    }
+impl PieceLocation {
+    pub const UFR: PieceLocation = PieceLocation(0);
+    pub const UFL: PieceLocation = PieceLocation(1);
+    pub const UBR: PieceLocation = PieceLocation(2);
+    pub const UBL: PieceLocation = PieceLocation(3);
+    pub const DFR: PieceLocation = PieceLocation(4);
+    pub const DFL: PieceLocation = PieceLocation(5);
+    pub const DBR: PieceLocation = PieceLocation(6);
+    pub const DBL: PieceLocation = PieceLocation(7);
+    
+    pub const UF: PieceLocation = PieceLocation(0);
+    pub const UL: PieceLocation = PieceLocation(1);
+    pub const UB: PieceLocation = PieceLocation(2);
+    pub const UR: PieceLocation = PieceLocation(3);
+    pub const DF: PieceLocation = PieceLocation(4);
+    pub const DL: PieceLocation = PieceLocation(5);
+    pub const DB: PieceLocation = PieceLocation(6);
+    pub const DR: PieceLocation = PieceLocation(7);
+    pub const FR: PieceLocation = PieceLocation(8);
+    pub const FL: PieceLocation = PieceLocation(9);
+    pub const BR: PieceLocation = PieceLocation(10);
+    pub const BL: PieceLocation = PieceLocation(11);
 }
