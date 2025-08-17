@@ -1,4 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
 pub struct PieceLocation(usize);
 
 impl PieceLocation {
@@ -23,4 +24,12 @@ impl PieceLocation {
     pub const FL: PieceLocation = PieceLocation(9);
     pub const BR: PieceLocation = PieceLocation(10);
     pub const BL: PieceLocation = PieceLocation(11);
+
+    pub const fn from_index(index: usize) -> PieceLocation {
+        PieceLocation(index)
+    }
+
+    pub const fn into_index(&self) -> usize {
+        self.0
+    }
 }

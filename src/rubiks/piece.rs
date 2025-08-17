@@ -1,6 +1,6 @@
-use crate::{faces::Face, twist::Twist};
+use crate::faces::{Face, CORNER_FACES, EDGE_FACES};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Piece<const FACES: usize> {
     stickers: [Face; FACES],
 }
@@ -11,33 +11,30 @@ impl<const FACES: usize> Piece<FACES> {
     }
 
     pub const fn is_corner() -> bool {
-        FACES == 3
+        FACES == EDGE_FACES as usize
     }
 
     pub const fn is_edge() -> bool {
-        FACES == 2
+        FACES == CORNER_FACES as usize
     }
-}
 
-pub struct PieceState<const FACES: usize> {
-    pub piece: Piece<FACES>,
-    pub twist: Twist,
+    pub const fn get_faces(&self) -> [Face; FACES] {
+        self.stickers
+    }
 }
 
 pub type Corner = Piece<3>;
 pub type Edge = Piece<2>;
-pub type CornerState = PieceState<3>;
-pub type EdgeState = PieceState<2>;
 
 impl Corner {
-        pub const UFR: Corner = Corner::new([Face::U, Face::F, Face::R]); 
-        pub const UFL: Corner = Corner::new([Face::U, Face::L, Face::F]); 
-        pub const UBR: Corner = Corner::new([Face::U, Face::B, Face::R]); 
-        pub const UBL: Corner = Corner::new([Face::U, Face::L, Face::B]); 
-        pub const DFR: Corner = Corner::new([Face::D, Face::F, Face::R]); 
-        pub const DFL: Corner = Corner::new([Face::D, Face::L, Face::F]); 
-        pub const DBR: Corner = Corner::new([Face::D, Face::B, Face::R]); 
-        pub const DLB: Corner = Corner::new([Face::D, Face::L, Face::B]); 
+    pub const UFR: Corner = Corner::new([Face::U, Face::F, Face::R]);
+    pub const UFL: Corner = Corner::new([Face::U, Face::L, Face::F]);
+    pub const UBR: Corner = Corner::new([Face::U, Face::B, Face::R]);
+    pub const UBL: Corner = Corner::new([Face::U, Face::L, Face::B]);
+    pub const DFR: Corner = Corner::new([Face::D, Face::F, Face::R]);
+    pub const DFL: Corner = Corner::new([Face::D, Face::L, Face::F]);
+    pub const DBR: Corner = Corner::new([Face::D, Face::B, Face::R]);
+    pub const DLB: Corner = Corner::new([Face::D, Face::L, Face::B]);
 }
 
 impl Edge {
@@ -53,4 +50,38 @@ impl Edge {
     pub const FL: Edge = Piece::new([Face::F, Face::L]);
     pub const BR: Edge = Piece::new([Face::B, Face::R]);
     pub const BL: Edge = Piece::new([Face::B, Face::L]);
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[repr(transparent)]
+pub struct Twist<const FACES: usize>(usize);
+
+impl<const FACES: usize> Twist<FACES> {
+    pub const fn solved() -> Self {
+        Self(0)
+    }
+
+    pub const fn add(&self, other: &Twist<FACES>) -> Twist<FACES> {
+        Twist((self.0 + other.0) % FACES)
+    }
+
+    pub const fn flipped(&self) -> Twist<FACES> {
+        Twist((FACES - self.0) % FACES)
+    }
+
+    pub const fn number_of_twists(&self) -> usize {
+        self.0
+    }
+
+    pub const fn is_solved(&self) -> bool {
+        self.0 == 0
+    }
+}
+
+pub type CornerTwist = Twist<CORNER_FACES>;
+pub type EdgeTwist = Twist<EDGE_FACES>;
+
+impl CornerTwist {
+    pub const CW_120: CornerTwist = Twist(0);
+    pub const CW_240: CornerTwist = Twist(1);
 }

@@ -1,5 +1,8 @@
 use core::fmt;
 
+pub const EDGE_FACES: usize = 2;
+pub const CORNER_FACES: usize = 3;
+
 pub type FaceMask = u8;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
