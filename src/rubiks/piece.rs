@@ -85,3 +85,12 @@ impl CornerTwist {
     pub const CW_120: CornerTwist = Twist(0);
     pub const CW_240: CornerTwist = Twist(1);
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PieceState<const FACES: usize> {
+    pub piece: Piece<FACES>,
+    pub twist: Twist<FACES>,
+}
+
+pub type CornerState = PieceState<CORNER_FACES>;
+pub type EdgeState = PieceState<EDGE_FACES>;

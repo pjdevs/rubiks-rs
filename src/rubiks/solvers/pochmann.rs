@@ -2,12 +2,11 @@ use std::collections::HashSet;
 
 use crate::cube::CubeState;
 use crate::location::PieceLocation;
-use crate::stickers::CubeStickerLocation;
-use crate::twist::Twist;
+use crate::stickers::{CornerSticker, EdgeSticker};
 
 pub struct PochmannSolver {
-    pub buffer_corner: CubeStickerLocation,
-    pub buffer_edge: CubeStickerLocation,
+    pub buffer_corner: CornerSticker,
+    pub buffer_edge: EdgeSticker,
 }
 
 pub struct PochmannSolution {
@@ -86,5 +85,16 @@ impl PochmannSolver {
             .iter_corners()
             .find(|(location, piece)| !solved_locations.contains(location) && piece.get_original_location() != *location)
             .map(|(location, _)| CubeStickerLocation { piece_location: location, twist: Twist::SOLVED })
+    }
+
+    const fn get_sticker_origin(
+        cube: &CubeState,
+        sticker_location: &CubeStickerLocation,
+    ) -> CubeStickerLocation {
+        let piece = cube.get_piece_at(&sticker_location.piece_location);
+        CubeStickerLocation {
+            piece_location: piece.get_original_location(),
+            twist: piece.get_opposite_twist(),
+        }
     }
 }
