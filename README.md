@@ -38,3 +38,10 @@ fn main() {
     println!("C: {:?}", solution.corner_cycles);
     println!("E: {:?}", solution.edge_cycles);
 }
+```
+
+## Project Goals
+
+- Provide a clean and idiomatic Rust base for Rubik’s Cube manipulation
+- Enable experimentation with solving algorithms and visualization
+- Serve as a learning resource for Rust applied to a concrete problem
