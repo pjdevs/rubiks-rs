@@ -1,6 +1,9 @@
+use rand::Rng;
+
 use crate::cube_constants::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[repr(transparent)]
 pub struct Twist(u8);
 
 impl Twist {
@@ -9,11 +12,11 @@ impl Twist {
     pub const CW_240: Twist = Twist(2);
     pub const FLIPPED: Twist = Twist(1);
 
-    pub const fn corner_add(&self, other: &Twist) -> Twist {
+    pub const fn corner_add(&self, other: Twist) -> Twist {
         Twist((self.0 + other.0) % STICKERS_ON_CORNERS)
     }
 
-    pub const fn edge_add(&self, other: &Twist) -> Twist {
+    pub const fn edge_add(&self, other: Twist) -> Twist {
         Twist((self.0 + other.0) % STICKERS_ON_EDGES)
     }
 
@@ -27,5 +30,13 @@ impl Twist {
 
     pub const fn number_of_twists(&self) -> u8 {
         self.0
+    }
+
+    pub fn random_uniform_corner<R: Rng>(rng: &mut R) -> Self{
+        Self(rng.random_range(0..STICKERS_ON_CORNERS))
+    }
+
+    pub fn random_uniform_edge<R: Rng>(rng: &mut R) -> Self{
+        Self(rng.random_range(0..STICKERS_ON_EDGES))
     }
 }

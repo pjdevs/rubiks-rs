@@ -1,7 +1,10 @@
+use rand::Rng;
+
 use crate::location::CubePieceLocation;
 use crate::piece::CubePiece;
 use crate::stickers::CubeStickerLocation;
 use crate::twist::Twist;
+use crate::utils::permutations;
 use std::collections::HashMap;
 use std::iter::once;
 
@@ -125,12 +128,6 @@ impl Cube {
         self.cubies.iter().filter(|(_, piece)| piece.is_edge())
     }
 
-    pub fn solved() -> Cube {
-        Cube {
-            cubies: HashMap::from(SOLVED_CUBIES),
-        }
-    }
-
     pub fn get_piece_at(&self, sticker_location: &CubePieceLocation) -> CubePiece {
         self.cubies[sticker_location]
     }
@@ -145,7 +142,88 @@ impl Cube {
             twist: piece.get_opposite_twist(),
         }
     }
+
+    pub fn solved() -> Cube {
+        Cube {
+            cubies: HashMap::from(SOLVED_CUBIES),
+        }
+    }
+
+    pub fn random_uniform<R: Rng>(rng: &mut R) -> Cube {
+        // Generate permutations of corners and edges
+        let corners_permutation = permutations::random_uniform_permutation::<8, R>(rng);
+        let mut edges_permutation = permutations::random_uniform_permutation::<12, R>(rng);
+
+        // Check permutatation parity
+        if permutations::permutation_parity(&corners_permutation) != permutations::permutation_parity(&edges_permutation) {
+            edges_permutation.swap(0, 1);
+        }
+
+        let solved_cubies = HashMap::from(SOLVED_CUBIES);
+        let mut cubies: HashMap<CubePieceLocation, CubePiece> = HashMap::with_capacity( 8 + 12);
+
+        // Generate random twists
+        let mut corner_twists: [Twist; 8] = std::array::from_fn(|_| Twist::random_uniform_corner(rng));
+        let mut edge_twists: [Twist; 12] = std::array::from_fn(|_| Twist::random_uniform_edge(rng));
+
+        let corner_twist_sum = corner_twists
+            .iter()
+            .copied()
+            .reduce(|sum, twist| twist.corner_add(sum))
+            .unwrap();
+        let edge_twist_sum = edge_twists
+            .iter()
+            .copied()
+            .reduce(|sum, twist| twist.edge_add(sum))
+            .unwrap();
+
+        // Correct twists
+        corner_twists[0] = corner_twists[0].corner_add(corner_twist_sum.corner_opposite());
+        edge_twists[0] = edge_twists[0].edge_add(edge_twist_sum.edge_opposite());
+
+        // Make cube
+        for corner_index in corners_permutation {
+            let location = CORNER_LOCATIONS[corner_index];
+            let twist = corner_twists[corner_index];
+            cubies.insert(location, solved_cubies[&location].twisted(twist));
+        }
+
+        for edge_index in edges_permutation {
+            let location = EDGE_LOCATIONS[edge_index];
+            let twist = edge_twists[edge_index];
+            cubies.insert(location, solved_cubies[&location].twisted(twist));
+        }
+
+        Cube { cubies }
+    }
 }
+
+static CORNER_LOCATIONS: [CubePieceLocation; 8] = [
+    CubePieceLocation::UFR,
+    CubePieceLocation::UFL,
+    CubePieceLocation::UBL,
+    CubePieceLocation::UBR,
+    CubePieceLocation::DFR,
+    CubePieceLocation::DFL,
+    CubePieceLocation::DBL,
+    CubePieceLocation::DBR,
+];
+
+static EDGE_LOCATIONS: [CubePieceLocation; 12] = [
+    CubePieceLocation::UR,
+    CubePieceLocation::UF,
+    CubePieceLocation::UL,
+    CubePieceLocation::UB,
+    CubePieceLocation::DR,
+    CubePieceLocation::DF,
+    CubePieceLocation::DL,
+    CubePieceLocation::DB,
+    CubePieceLocation::FR,
+    CubePieceLocation::FL,
+    CubePieceLocation::BL,
+    CubePieceLocation::BR,
+];
+
 
 static SOLVED_CUBIES: [(CubePieceLocation, CubePiece); 20] = [
     (CubePieceLocation::UFR, CubePiece::UFR),
@@ -409,5 +487,20 @@ mod tests {
             R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up,
         ]);
         assert_eq!(cube, Cube::solved());
+    }
+
+    #[test]
+    fn test_random_cube_twist_sum() {
+        let mut rng = rand::rng();
+
+        for _ in 0..1000 {
+            let cube = Cube::random_uniform(&mut rng);
+    
+            let corner_twist = cube.iter_corners().fold(Twist::SOLVED, |sum, (_, corner)| sum.corner_add(corner.get_twist()));
+            assert_eq!(corner_twist, Twist::SOLVED);
+        
+            let edge_twist = cube.iter_edges().fold(Twist::SOLVED, |sum, (_, edge)| sum.edge_add(edge.get_twist()));
+            assert_eq!(edge_twist, Twist::SOLVED);
+        }
     }
 }

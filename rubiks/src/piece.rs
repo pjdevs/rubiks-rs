@@ -70,9 +70,9 @@ impl CubePiece {
         CubePiece {
             original_location: self.original_location,
             twist: if self.is_corner() {
-                self.twist.corner_add(&twist)
+                self.twist.corner_add(twist)
             } else {
-                self.twist.edge_add(&twist)
+                self.twist.edge_add(twist)
             },
         }
     }
