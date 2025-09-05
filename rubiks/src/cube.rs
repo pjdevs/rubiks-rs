@@ -22,6 +22,30 @@ impl CubeMove {
             CubeMove::Rp => Self::R,
         }
     }
+
+    pub fn parse(str: &str) -> Option<Self> {
+        match str {
+            "U" => Some(Self::U),
+            "R" => Some(Self::R),
+            "U'" => Some(Self::Up),
+            "R'" => Some(Self::Rp),
+            _ => None
+        }
+    }
+
+    pub fn parse_array(str: &str) -> Option<Vec<Self>> {
+        let mut cube_moves = vec![];
+        let splits = str.split(' ');
+
+        for split in splits {
+            match Self::parse(split) {
+                Some(cube_move) => cube_moves.push(cube_move),
+                None => return None,
+            }
+        }
+
+        Some(cube_moves)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
