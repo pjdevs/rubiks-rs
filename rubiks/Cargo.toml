@@ -1,0 +1,8 @@
+[package]
+name = "rubiks"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bitmask-enum = "2.2.5"
+enum-iterator = "2.1.0"

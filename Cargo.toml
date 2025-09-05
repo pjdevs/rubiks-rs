@@ -1,16 +1,5 @@
-[package]
-name = "rubiks-rs"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-bitmask-enum = "2.2.5"
-enum-iterator = "2.1.0"
-
-[lib]
-name = "rubiks"
-path = "src/rubiks/lib.rs"
-
-[[bin]]
-name = "rubiks-rs"
-path = "src/main.rs"
+[workspace]
+members = [
+    "rubiks",
+    "rubiks-cli",
+]
