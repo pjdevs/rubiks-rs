@@ -9,14 +9,14 @@ pub struct CubePiece {
 
 impl CubePiece {
     // ? Could only use location and from_location but keep for helper ?
-    pub const UFR: CubePiece = CubePiece::corner(CubePieceLocation::UFR);
+    pub const UFR: CubePiece = CubePiece::corner(CubePieceLocation::URF);
     pub const UFL: CubePiece = CubePiece::corner(CubePieceLocation::UFL);
-    pub const UBL: CubePiece = CubePiece::corner(CubePieceLocation::UBL);
+    pub const UBL: CubePiece = CubePiece::corner(CubePieceLocation::ULB);
     pub const UBR: CubePiece = CubePiece::corner(CubePieceLocation::UBR);
     pub const DFR: CubePiece = CubePiece::corner(CubePieceLocation::DFR);
-    pub const DFL: CubePiece = CubePiece::corner(CubePieceLocation::DFL);
+    pub const DFL: CubePiece = CubePiece::corner(CubePieceLocation::DLF);
     pub const DBL: CubePiece = CubePiece::corner(CubePieceLocation::DBL);
-    pub const DBR: CubePiece = CubePiece::corner(CubePieceLocation::DBR);
+    pub const DBR: CubePiece = CubePiece::corner(CubePieceLocation::DRB);
     pub const UR: CubePiece = CubePiece::edge(CubePieceLocation::UR);
     pub const UF: CubePiece = CubePiece::edge(CubePieceLocation::UF);
     pub const UL: CubePiece = CubePiece::edge(CubePieceLocation::UL);
@@ -50,7 +50,7 @@ impl CubePiece {
         self.twist
     }
 
-    pub fn get_opposite_twist(&self) -> Twist {
+    pub const fn get_opposite_twist(&self) -> Twist {
         if self.is_corner() {
             self.twist.corner_opposite()
         } else {
@@ -73,6 +73,24 @@ impl CubePiece {
                 self.twist.corner_add(twist)
             } else {
                 self.twist.edge_add(twist)
+            },
+        }
+    }
+
+    pub const fn opposite_twisted(&self) -> CubePiece {
+        CubePiece {
+            original_location: self.original_location,
+            twist: self.get_opposite_twist(),
+        }
+    }
+
+    pub const fn twisted_opposite(&self, twist: Twist) -> CubePiece {
+        CubePiece {
+            original_location: self.original_location,
+            twist: if self.is_corner() {
+                self.twist.corner_add(twist.corner_opposite())
+            } else {
+                self.twist.edge_add(twist.edge_opposite())
             },
         }
     }

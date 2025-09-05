@@ -1,5 +1,6 @@
 use core::fmt;
 
+use crate::faces::FaceMask;
 use crate::location::CubePieceLocation;
 use crate::twist::Twist;
 
@@ -10,16 +11,16 @@ pub struct CubeStickerLocation {
 }
 
 impl CubeStickerLocation {
-    pub const UFR: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::UFR,
+    pub const URF: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::URF,
         twist: Twist::SOLVED,
     };
-    pub const FRU: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::UFR,
+    pub const RFU: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::URF,
         twist: Twist::CW_120,
     };
-    pub const RUF: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::UFR,
+    pub const FUR: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::URF,
         twist: Twist::CW_240,
     };
     pub const UFL: CubeStickerLocation = CubeStickerLocation {
@@ -34,16 +35,16 @@ impl CubeStickerLocation {
         piece_location: CubePieceLocation::UFL,
         twist: Twist::CW_240,
     };
-    pub const UBL: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::UBL,
+    pub const ULB: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::ULB,
         twist: Twist::SOLVED,
     };
-    pub const BLU: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::UBL,
+    pub const LBU: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::ULB,
         twist: Twist::CW_120,
     };
-    pub const LUB: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::UBL,
+    pub const BUL: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::ULB,
         twist: Twist::CW_240,
     };
     pub const UBR: CubeStickerLocation = CubeStickerLocation {
@@ -70,16 +71,16 @@ impl CubeStickerLocation {
         piece_location: CubePieceLocation::DFR,
         twist: Twist::CW_240,
     };
-    pub const DFL: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::DFL,
+    pub const DLF: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::DLF,
         twist: Twist::SOLVED,
     };
-    pub const FLD: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::DFL,
+    pub const LFD: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::DLF,
         twist: Twist::CW_120,
     };
-    pub const LDF: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::DFL,
+    pub const FDL: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::DLF,
         twist: Twist::CW_240,
     };
     pub const DBL: CubeStickerLocation = CubeStickerLocation {
@@ -94,16 +95,16 @@ impl CubeStickerLocation {
         piece_location: CubePieceLocation::DBL,
         twist: Twist::CW_240,
     };
-    pub const DBR: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::DBR,
+    pub const DRB: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::DRB,
         twist: Twist::SOLVED,
     };
-    pub const BRD: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::DBR,
+    pub const RBD: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::DRB,
         twist: Twist::CW_120,
     };
-    pub const RDB: CubeStickerLocation = CubeStickerLocation {
-        piece_location: CubePieceLocation::DBR,
+    pub const BDR: CubeStickerLocation = CubeStickerLocation {
+        piece_location: CubePieceLocation::DRB,
         twist: Twist::CW_240,
     };
 
@@ -206,7 +207,7 @@ impl CubeStickerLocation {
 
     pub fn to_sticker_name(&self) -> String {
         let number_of_twists = self.twist.number_of_twists();
-        let mut faces = self.piece_location.mask().faces();
+        let mut faces = self.piece_location.get_faces();
         faces.rotate_left(number_of_twists as usize);
 
         faces.iter().map(|f| f.to_string()).collect()

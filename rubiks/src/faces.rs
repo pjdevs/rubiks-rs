@@ -36,28 +36,4 @@ impl FaceMask {
     pub const fn is_edge(self) -> bool {
         self.bits().count_ones() == STICKERS_ON_EDGES as u32
     }
-
-    pub fn faces(&self) -> Vec<Face> {
-        let mut faces = Vec::new();
-
-        if self.contains(Self::U) {
-            faces.push(Face::U);
-        } else if self.contains(Self::D) {
-            faces.push(Face::D);
-        }
-
-        if self.contains(Self::B) {
-            faces.push(Face::B);
-        } else if self.contains(Self::F) {
-            faces.push(Face::F);
-        }
-
-        if self.contains(Self::R) {
-            faces.push(Face::R);
-        } else if self.contains(Self::L) {
-            faces.push(Face::L);
-        }
-
-        faces
-    }
 }

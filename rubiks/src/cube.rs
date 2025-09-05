@@ -139,7 +139,7 @@ impl Cube {
         let piece = self.cubies[&sticker_location.piece_location];
         CubeStickerLocation {
             piece_location: piece.get_original_location(),
-            twist: piece.get_opposite_twist(),
+            twist: piece.twisted(sticker_location.twist).get_opposite_twist(),
         }
     }
 
@@ -195,14 +195,14 @@ impl Cube {
 }
 
 static CORNER_LOCATIONS: [CubePieceLocation; 8] = [
-    CubePieceLocation::UFR,
+    CubePieceLocation::URF,
     CubePieceLocation::UFL,
-    CubePieceLocation::UBL,
+    CubePieceLocation::ULB,
     CubePieceLocation::UBR,
     CubePieceLocation::DFR,
-    CubePieceLocation::DFL,
+    CubePieceLocation::DLF,
     CubePieceLocation::DBL,
-    CubePieceLocation::DBR,
+    CubePieceLocation::DRB,
 ];
 
 static EDGE_LOCATIONS: [CubePieceLocation; 12] = [
@@ -222,14 +222,14 @@ static EDGE_LOCATIONS: [CubePieceLocation; 12] = [
 
 
 static SOLVED_CUBIES: [(CubePieceLocation, CubePiece); 20] = [
-    (CubePieceLocation::UFR, CubePiece::UFR),
+    (CubePieceLocation::URF, CubePiece::UFR),
     (CubePieceLocation::UFL, CubePiece::UFL),
-    (CubePieceLocation::UBL, CubePiece::UBL),
+    (CubePieceLocation::ULB, CubePiece::UBL),
     (CubePieceLocation::UBR, CubePiece::UBR),
     (CubePieceLocation::DFR, CubePiece::DFR),
-    (CubePieceLocation::DFL, CubePiece::DFL),
+    (CubePieceLocation::DLF, CubePiece::DFL),
     (CubePieceLocation::DBL, CubePiece::DBL),
-    (CubePieceLocation::DBR, CubePiece::DBR),
+    (CubePieceLocation::DRB, CubePiece::DBR),
     (CubePieceLocation::UR, CubePiece::UR),
     (CubePieceLocation::UF, CubePiece::UF),
     (CubePieceLocation::UL, CubePiece::UL),
@@ -247,9 +247,9 @@ static SOLVED_CUBIES: [(CubePieceLocation, CubePiece); 20] = [
 // ? We could newtype an create CornerCycle and EdgeCycle and validate at compile time that there is no faces/edges/corners in same array
 static CYCLE_U_CORNERS: [CubePieceLocation; 4] = [
     CubePieceLocation::UFL,
-    CubePieceLocation::UBL,
+    CubePieceLocation::ULB,
     CubePieceLocation::UBR,
-    CubePieceLocation::UFR,
+    CubePieceLocation::URF,
 ];
 static CYCLE_U_EDGES: [CubePieceLocation; 4] = [
     CubePieceLocation::UF,
@@ -258,9 +258,9 @@ static CYCLE_U_EDGES: [CubePieceLocation; 4] = [
     CubePieceLocation::UR,
 ];
 static CYCLE_R_CORNERS: [CubePieceLocation; 4] = [
-    CubePieceLocation::UFR,
+    CubePieceLocation::URF,
     CubePieceLocation::UBR,
-    CubePieceLocation::DBR,
+    CubePieceLocation::DRB,
     CubePieceLocation::DFR,
 ];
 static CYCLE_R_EDGES: [CubePieceLocation; 4] = [
@@ -271,9 +271,9 @@ static CYCLE_R_EDGES: [CubePieceLocation; 4] = [
 ];
 static CYCLE_UP_CORNERS: [CubePieceLocation; 4] = [
     CubePieceLocation::UFL,
-    CubePieceLocation::UFR,
+    CubePieceLocation::URF,
     CubePieceLocation::UBR,
-    CubePieceLocation::UBL,
+    CubePieceLocation::ULB,
 ];
 static CYCLE_UP_EDGES: [CubePieceLocation; 4] = [
     CubePieceLocation::UF,
@@ -282,9 +282,9 @@ static CYCLE_UP_EDGES: [CubePieceLocation; 4] = [
     CubePieceLocation::UL,
 ];
 static CYCLE_RP_CORNERS: [CubePieceLocation; 4] = [
-    CubePieceLocation::UFR,
+    CubePieceLocation::URF,
     CubePieceLocation::DFR,
-    CubePieceLocation::DBR,
+    CubePieceLocation::DRB,
     CubePieceLocation::UBR,
 ];
 static CYCLE_RP_EDGES: [CubePieceLocation; 4] = [
@@ -317,9 +317,9 @@ mod tests {
         cube.apply_move(CubeMove::U);
 
         assert_eq!(cube.cubies[&CubePieceLocation::UFL], CubePiece::UFR);
-        assert_eq!(cube.cubies[&CubePieceLocation::UFR], CubePiece::UBR);
+        assert_eq!(cube.cubies[&CubePieceLocation::URF], CubePiece::UBR);
         assert_eq!(cube.cubies[&CubePieceLocation::UBR], CubePiece::UBL);
-        assert_eq!(cube.cubies[&CubePieceLocation::UBL], CubePiece::UFL);
+        assert_eq!(cube.cubies[&CubePieceLocation::ULB], CubePiece::UFL);
 
         assert_eq!(cube.cubies[&CubePieceLocation::UF], CubePiece::UR);
         assert_eq!(cube.cubies[&CubePieceLocation::UR], CubePiece::UB);
@@ -332,9 +332,9 @@ mod tests {
         let mut cube = Cube::solved();
         cube.apply_move(CubeMove::Up);
 
-        assert_eq!(cube.cubies[&CubePieceLocation::UFR], CubePiece::UFL);
+        assert_eq!(cube.cubies[&CubePieceLocation::URF], CubePiece::UFL);
         assert_eq!(cube.cubies[&CubePieceLocation::UBR], CubePiece::UFR);
-        assert_eq!(cube.cubies[&CubePieceLocation::UBL], CubePiece::UBR);
+        assert_eq!(cube.cubies[&CubePieceLocation::ULB], CubePiece::UBR);
         assert_eq!(cube.cubies[&CubePieceLocation::UFL], CubePiece::UBL);
 
         assert_eq!(cube.cubies[&CubePieceLocation::UR], CubePiece::UF);
@@ -353,7 +353,7 @@ mod tests {
             CubePiece::UFR.twisted(Twist::CW_120)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::DBR],
+            cube.cubies[&CubePieceLocation::DRB],
             CubePiece::UBR.twisted(Twist::CW_240)
         );
         assert_eq!(
@@ -361,7 +361,7 @@ mod tests {
             CubePiece::DBR.twisted(Twist::CW_120)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::UFR],
+            cube.cubies[&CubePieceLocation::URF],
             CubePiece::DFR.twisted(Twist::CW_240)
         );
 
@@ -389,7 +389,7 @@ mod tests {
         cube.apply_move(CubeMove::Rp);
 
         assert_eq!(
-            cube.cubies[&CubePieceLocation::UFR],
+            cube.cubies[&CubePieceLocation::URF],
             CubePiece::UBR.twisted(Twist::CW_240)
         );
         assert_eq!(
@@ -397,7 +397,7 @@ mod tests {
             CubePiece::DBR.twisted(Twist::CW_120)
         );
         assert_eq!(
-            cube.cubies[&CubePieceLocation::DBR],
+            cube.cubies[&CubePieceLocation::DRB],
             CubePiece::DFR.twisted(Twist::CW_240)
         );
         assert_eq!(
@@ -469,7 +469,7 @@ mod tests {
         cube.apply_moves(&vec![R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up]);
 
         assert_eq!(
-            cube.get_piece_at(&CubePieceLocation::UFR).get_twist(),
+            cube.get_piece_at(&CubePieceLocation::URF).get_twist(),
             Twist::SOLVED
         );
     }
