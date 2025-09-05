@@ -168,14 +168,10 @@ impl Cube {
 
         let corner_twist_sum = corner_twists
             .iter()
-            .copied()
-            .reduce(|sum, twist| twist.corner_add(sum))
-            .unwrap();
+            .fold(Twist::SOLVED, |sum, twist| twist.corner_add(sum));
         let edge_twist_sum = edge_twists
             .iter()
-            .copied()
-            .reduce(|sum, twist| twist.edge_add(sum))
-            .unwrap();
+            .fold(Twist::SOLVED, |sum, twist| twist.edge_add(sum));
 
         // Correct twists
         corner_twists[0] = corner_twists[0].corner_add(corner_twist_sum.corner_opposite());
