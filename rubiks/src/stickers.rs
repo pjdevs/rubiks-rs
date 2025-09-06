@@ -1,6 +1,4 @@
 use core::fmt;
-
-use crate::faces::FaceMask;
 use crate::location::CubePieceLocation;
 use crate::twist::Twist;
 

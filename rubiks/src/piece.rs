@@ -50,14 +50,6 @@ impl CubePiece {
         self.twist
     }
 
-    pub const fn get_opposite_twist(&self) -> Twist {
-        if self.is_corner() {
-            self.twist.corner_opposite()
-        } else {
-            self.twist.edge_opposite()
-        }
-    }
-
     pub const fn is_corner(&self) -> bool {
         self.original_location.is_corner()
     }
@@ -73,24 +65,6 @@ impl CubePiece {
                 self.twist.corner_add(twist)
             } else {
                 self.twist.edge_add(twist)
-            },
-        }
-    }
-
-    pub const fn opposite_twisted(&self) -> CubePiece {
-        CubePiece {
-            original_location: self.original_location,
-            twist: self.get_opposite_twist(),
-        }
-    }
-
-    pub const fn twisted_opposite(&self, twist: Twist) -> CubePiece {
-        CubePiece {
-            original_location: self.original_location,
-            twist: if self.is_corner() {
-                self.twist.corner_add(twist.corner_opposite())
-            } else {
-                self.twist.edge_add(twist.edge_opposite())
             },
         }
     }

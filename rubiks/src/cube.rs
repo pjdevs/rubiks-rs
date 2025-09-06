@@ -11,28 +11,70 @@ use std::iter::once;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CubeMove {
     U,
-    R,
+    U2,
     Up,
+    R,
+    R2,
     Rp,
+    F,
+    F2,
+    Fp,
+    D,
+    D2,
+    Dp,
+    L,
+    L2,
+    Lp,
+    B,
+    B2,
+    Bp
 }
 
 impl CubeMove {
     pub fn inverted(&self) -> Self {
         match self {
             CubeMove::U => Self::Up,
-            CubeMove::R => Self::Rp,
+            CubeMove::U2 => Self::U2,
             CubeMove::Up => Self::U,
+            CubeMove::R => Self::Rp,
+            CubeMove::R2 => Self::R2,
             CubeMove::Rp => Self::R,
+            CubeMove::F => Self::Fp,
+            CubeMove::F2 => Self::F2,
+            CubeMove::Fp => Self::F,
+            CubeMove::D => Self::Dp,
+            CubeMove::D2 => Self::D2,
+            CubeMove::Dp => Self::D,
+            CubeMove::L => Self::Lp,
+            CubeMove::L2 => Self::L2,
+            CubeMove::Lp => Self::L,
+            CubeMove::B => Self::Bp,
+            CubeMove::B2 => Self::B2,
+            CubeMove::Bp => Self::B,
         }
     }
 
     pub fn parse(str: &str) -> Option<Self> {
         match str {
             "U" => Some(Self::U),
-            "R" => Some(Self::R),
+            "U2" => Some(Self::U2),
             "U'" => Some(Self::Up),
+            "R" => Some(Self::R),
+            "R2" => Some(Self::R2),
             "R'" => Some(Self::Rp),
-            _ => None
+            "F" => Some(Self::F),
+            "F2" => Some(Self::F2),
+            "F'" => Some(Self::Fp),
+            "D" => Some(Self::D),
+            "D2" => Some(Self::D2),
+            "D'" => Some(Self::Dp),
+            "L" => Some(Self::L),
+            "L2" => Some(Self::L2),
+            "L'" => Some(Self::Lp),
+            "B" => Some(Self::B),
+            "B2" => Some(Self::B2),
+            "B'" => Some(Self::Bp),
+            _ => None,
         }
     }
 
@@ -63,24 +105,85 @@ impl Cube {
         }
     }
 
+    // TODO Make own cycles for double and prime moves to optimize
     fn apply_move(&mut self, cube_move: CubeMove) {
         match cube_move {
             CubeMove::U => {
                 self.cycle_cubies(&CYCLE_U_CORNERS, &TWIST_CORNERS_SOLVED);
                 self.cycle_cubies(&CYCLE_U_EDGES, &TWIST_EDGES_SOLVED);
             }
-            CubeMove::R => {
-                self.cycle_cubies(&CYCLE_R_CORNERS, &TWIST_CORNERS_120_240);
-                self.cycle_cubies(&CYCLE_R_EDGES, &TWIST_EDGES_FLIP);
-            }
+            CubeMove::U2 => {
+                self.apply_move(CubeMove::U);
+                self.apply_move(CubeMove::U);
+            },
             CubeMove::Up => {
                 self.cycle_cubies(&CYCLE_UP_CORNERS, &TWIST_CORNERS_SOLVED);
                 self.cycle_cubies(&CYCLE_UP_EDGES, &TWIST_EDGES_SOLVED);
             }
+            CubeMove::R => {
+                self.cycle_cubies(&CYCLE_R_CORNERS, &TWIST_CORNERS_120_240);
+                self.cycle_cubies(&CYCLE_R_EDGES, &TWIST_EDGES_FLIP);
+            }
+            CubeMove::R2 => {
+                self.apply_move(CubeMove::R);
+                self.apply_move(CubeMove::R);
+            },
             CubeMove::Rp => {
                 self.cycle_cubies(&CYCLE_RP_CORNERS, &TWIST_CORNERS_120_240);
                 self.cycle_cubies(&CYCLE_RP_EDGES, &TWIST_EDGES_FLIP);
             }
+            CubeMove::F => {
+                self.cycle_cubies(&CYCLE_F_CORNERS, &TWIST_CORNERS_120_240);
+                self.cycle_cubies(&CYCLE_F_EDGES, &TWIST_EDGES_FLIP);
+            },
+            CubeMove::F2 => {
+                self.apply_move(CubeMove::F);
+                self.apply_move(CubeMove::F);
+            },
+            CubeMove::Fp => {
+                self.apply_move(CubeMove::F);
+                self.apply_move(CubeMove::F);
+                self.apply_move(CubeMove::F);
+            },
+            CubeMove::D => {
+                self.cycle_cubies(&CYCLE_D_CORNERS, &TWIST_CORNERS_SOLVED);
+                self.cycle_cubies(&CYCLE_D_EDGES, &TWIST_EDGES_SOLVED);
+            },
+            CubeMove::D2 => {
+                self.apply_move(CubeMove::D);
+                self.apply_move(CubeMove::D);
+            },
+            CubeMove::Dp => {
+                self.apply_move(CubeMove::D);
+                self.apply_move(CubeMove::D);
+                self.apply_move(CubeMove::D);
+            },
+            CubeMove::L => {
+                self.cycle_cubies(&CYCLE_L_CORNERS, &TWIST_CORNERS_120_240);
+                self.cycle_cubies(&CYCLE_L_EDGES, &TWIST_EDGES_FLIP);
+            },
+            CubeMove::L2 => {
+                self.apply_move(CubeMove::L);
+                self.apply_move(CubeMove::L);
+            },
+            CubeMove::Lp => {
+                self.apply_move(CubeMove::L);
+                self.apply_move(CubeMove::L);
+                self.apply_move(CubeMove::L);
+            },
+            CubeMove::B => {
+                self.cycle_cubies(&CYCLE_B_CORNERS, &TWIST_CORNERS_120_240);
+                self.cycle_cubies(&CYCLE_B_EDGES, &TWIST_EDGES_FLIP);
+            },
+            CubeMove::B2 => {
+                self.apply_move(CubeMove::B);
+                self.apply_move(CubeMove::B);
+            },
+            CubeMove::Bp => {
+                self.apply_move(CubeMove::B);
+                self.apply_move(CubeMove::B);
+                self.apply_move(CubeMove::B);
+            },
         }
     }
 
@@ -137,9 +240,19 @@ impl Cube {
         sticker_location: &CubeStickerLocation,
     ) -> CubeStickerLocation {
         let piece = self.cubies[&sticker_location.piece_location];
+        let piece_twist = piece.get_twist();
+        let r = if piece.is_corner() {
+            let opposite = piece_twist.corner_opposite();
+            let ctwist = opposite.corner_add(sticker_location.twist);
+            ctwist
+        } else {
+            let opposite = piece_twist.edge_opposite();
+            let etwist = opposite.edge_add(sticker_location.twist);
+            etwist
+        };
         CubeStickerLocation {
             piece_location: piece.get_original_location(),
-            twist: piece.twisted(sticker_location.twist).get_opposite_twist(),
+            twist: r
         }
     }
 
@@ -257,18 +370,6 @@ static CYCLE_U_EDGES: [CubePieceLocation; 4] = [
     CubePieceLocation::UB,
     CubePieceLocation::UR,
 ];
-static CYCLE_R_CORNERS: [CubePieceLocation; 4] = [
-    CubePieceLocation::URF,
-    CubePieceLocation::UBR,
-    CubePieceLocation::DRB,
-    CubePieceLocation::DFR,
-];
-static CYCLE_R_EDGES: [CubePieceLocation; 4] = [
-    CubePieceLocation::UR,
-    CubePieceLocation::BR,
-    CubePieceLocation::DR,
-    CubePieceLocation::FR,
-];
 static CYCLE_UP_CORNERS: [CubePieceLocation; 4] = [
     CubePieceLocation::UFL,
     CubePieceLocation::URF,
@@ -280,6 +381,19 @@ static CYCLE_UP_EDGES: [CubePieceLocation; 4] = [
     CubePieceLocation::UR,
     CubePieceLocation::UB,
     CubePieceLocation::UL,
+];
+
+static CYCLE_R_CORNERS: [CubePieceLocation; 4] = [
+    CubePieceLocation::URF,
+    CubePieceLocation::UBR,
+    CubePieceLocation::DRB,
+    CubePieceLocation::DFR,
+];
+static CYCLE_R_EDGES: [CubePieceLocation; 4] = [
+    CubePieceLocation::UR,
+    CubePieceLocation::BR,
+    CubePieceLocation::DR,
+    CubePieceLocation::FR,
 ];
 static CYCLE_RP_CORNERS: [CubePieceLocation; 4] = [
     CubePieceLocation::URF,
@@ -293,19 +407,63 @@ static CYCLE_RP_EDGES: [CubePieceLocation; 4] = [
     CubePieceLocation::DR,
     CubePieceLocation::BR,
 ];
-static TWIST_CORNERS_SOLVED: [Twist; 4] =
-    [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
-static TWIST_CORNERS_120_240: [Twist; 4] =
-    [Twist::CW_120, Twist::CW_240, Twist::CW_120, Twist::CW_240];
-// static TWIST_CORNERS_240_120: [Twist; 4] = [Twist::CW_240, Twist::CW_120, Twist::CW_240, Twist::CW_120];
-static TWIST_EDGES_SOLVED: [Twist; 4] =
-    [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
-static TWIST_EDGES_FLIP: [Twist; 4] = [
-    Twist::FLIPPED,
-    Twist::FLIPPED,
-    Twist::FLIPPED,
-    Twist::FLIPPED,
+
+static CYCLE_F_CORNERS: [CubePieceLocation; 4] = [
+    CubePieceLocation::UFL,
+    CubePieceLocation::URF,
+    CubePieceLocation::DFR,
+    CubePieceLocation::DLF,
 ];
+static CYCLE_F_EDGES: [CubePieceLocation; 4] = [
+    CubePieceLocation::UF,
+    CubePieceLocation::FR,
+    CubePieceLocation::DF,
+    CubePieceLocation::FL,
+];
+
+static CYCLE_D_CORNERS: [CubePieceLocation; 4] = [
+    CubePieceLocation::DLF,
+    CubePieceLocation::DFR,
+    CubePieceLocation::DRB,
+    CubePieceLocation::DBL,
+];
+static CYCLE_D_EDGES: [CubePieceLocation; 4] = [
+    CubePieceLocation::DF,
+    CubePieceLocation::DR,
+    CubePieceLocation::DB,
+    CubePieceLocation::DL,
+];
+
+static CYCLE_L_CORNERS: [CubePieceLocation; 4] = [
+    CubePieceLocation::ULB,
+    CubePieceLocation::UFL,
+    CubePieceLocation::DLF,
+    CubePieceLocation::DBL,
+];
+static CYCLE_L_EDGES: [CubePieceLocation; 4] = [
+    CubePieceLocation::FL,
+    CubePieceLocation::DL,
+    CubePieceLocation::BL,
+    CubePieceLocation::UL,
+];
+
+static CYCLE_B_CORNERS: [CubePieceLocation; 4] = [
+    CubePieceLocation::UBR,
+    CubePieceLocation::ULB,
+    CubePieceLocation::DBL,
+    CubePieceLocation::DRB,
+];
+static CYCLE_B_EDGES: [CubePieceLocation; 4] = [
+    CubePieceLocation::UB,
+    CubePieceLocation::BL,
+    CubePieceLocation::DB,
+    CubePieceLocation::BR,
+];
+
+static TWIST_CORNERS_SOLVED: [Twist; 4] = [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
+static TWIST_CORNERS_120_240: [Twist; 4] = [Twist::CW_120, Twist::CW_240, Twist::CW_120, Twist::CW_240];
+static TWIST_EDGES_SOLVED: [Twist; 4] = [Twist::SOLVED, Twist::SOLVED, Twist::SOLVED, Twist::SOLVED];
+static TWIST_EDGES_FLIP: [Twist; 4] = [Twist::FLIPPED, Twist::FLIPPED, Twist::FLIPPED, Twist::FLIPPED];
 
 #[cfg(test)]
 mod tests {
@@ -475,14 +633,58 @@ mod tests {
     }
 
     #[test]
-    fn test_3_sexy_has_no_effect() {
+    fn test_6_sexy_has_no_effect() {
         use CubeMove::*;
 
         let mut cube = Cube::solved();
         cube.apply_moves(&vec![
-            R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up, R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
+            R, U, Rp, Up,
         ]);
         assert_eq!(cube, Cube::solved());
+    }
+
+        #[test]
+    fn test_6_lf_sexy_has_no_effect() {
+        use CubeMove::*;
+
+        let mut cube = Cube::solved();
+        cube.apply_moves(&vec![
+            L, Fp, Lp, F,
+            L, Fp, Lp, F,
+            L, Fp, Lp, F,
+            L, Fp, Lp, F,
+            L, Fp, Lp, F,
+            L, Fp, Lp, F,
+        ]);
+        assert_eq!(cube, Cube::solved());
+    }
+
+    #[test]
+    fn test_t_perm() {
+        use CubeMove::*;
+
+        let mut cube = Cube::solved();
+        cube.apply_moves(&vec![R, U, Rp, Up, Rp, F, R2, Up, Rp, Up, R, U, Rp, Fp]);
+
+        assert_eq!(cube.get_piece_at(&CubePieceLocation::DF), CubePiece::DF);
+        assert_eq!(cube.get_piece_at(&CubePieceLocation::DL), CubePiece::DL);
+
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::DF).to_sticker_name(), "DF");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::DL), CubeStickerLocation::DL);
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::FD), CubeStickerLocation::FD);
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::LD), CubeStickerLocation::LD);
+
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::LU), CubeStickerLocation::RU);
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RUB), CubeStickerLocation::FUR);
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RFU), CubeStickerLocation::BRU);
+
+        cube.apply_moves(&vec![R, U, Rp, Up, Rp, F, R2, Up, Rp, Up, R, U, Rp, Fp]);
+        assert!(cube.is_solved());
     }
 
     #[test]
@@ -498,5 +700,26 @@ mod tests {
             let edge_twist = cube.iter_edges().fold(Twist::SOLVED, |sum, (_, edge)| sum.edge_add(edge.get_twist()));
             assert_eq!(edge_twist, Twist::SOLVED);
         }
+    }
+
+    #[test]
+    fn test_sticker_origin_name() {
+        use CubeMove::*;
+
+        let mut cube = Cube::solved();
+        cube.apply_moves(&vec![R, U, Rp, Up]);
+
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::UB).to_sticker_name(), "UR");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::BU).to_sticker_name(), "RU");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::UR).to_sticker_name(), "RF");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RU).to_sticker_name(), "FR");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::FR).to_sticker_name(), "BU");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RF).to_sticker_name(), "UB");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::UBR).to_sticker_name(), "LBU");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::BRU).to_sticker_name(), "BUL");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RUB).to_sticker_name(), "ULB");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::URF).to_sticker_name(), "FRD");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RFU).to_sticker_name(), "RDF");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::FUR).to_sticker_name(), "DFR");
     }
 }

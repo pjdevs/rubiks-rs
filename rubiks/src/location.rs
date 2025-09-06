@@ -11,28 +11,20 @@ impl CubePieceLocation {
     pub const UL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::L));
     pub const DB: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::B));
     pub const DR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::R));
-    pub const DF: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::L));
-    pub const DL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F));
+    pub const DF: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F));
+    pub const DL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::L));
     pub const BR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::B.or(FaceMask::R));
     pub const BL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::B.or(FaceMask::L));
     pub const FR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::F.or(FaceMask::R));
     pub const FL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::F.or(FaceMask::L));
-    pub const URF: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::F).or(FaceMask::R));
-    pub const UFL: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::F).or(FaceMask::L));
-    pub const ULB: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::B).or(FaceMask::L));
-    pub const UBR: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::B).or(FaceMask::R));
-    pub const DFR: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F).or(FaceMask::R));
-    pub const DLF: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F).or(FaceMask::L));
-    pub const DBL: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::B).or(FaceMask::L));
-    pub const DRB: CubePieceLocation =
-        CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::B).or(FaceMask::R));
+    pub const URF: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::F).or(FaceMask::R));
+    pub const UFL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::F).or(FaceMask::L));
+    pub const ULB: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::B).or(FaceMask::L));
+    pub const UBR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::U.or(FaceMask::B).or(FaceMask::R));
+    pub const DFR: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F).or(FaceMask::R));
+    pub const DLF: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::F).or(FaceMask::L));
+    pub const DBL: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::B).or(FaceMask::L));
+    pub const DRB: CubePieceLocation = CubePieceLocation::from_mask(FaceMask::D.or(FaceMask::B).or(FaceMask::R));
 
     const fn from_mask(mask: FaceMask) -> CubePieceLocation {
         assert!(mask.is_corner() || mask.is_edge());
@@ -60,8 +52,8 @@ impl CubePieceLocation {
             Self::UL => vec![U, L],
             Self::DB => vec![D, B],
             Self::DR => vec![D, R],
-            Self::DF => vec![D, L],
-            Self::DL => vec![D, F],
+            Self::DF => vec![D, F],
+            Self::DL => vec![D, L],
             Self::BR => vec![B, R],
             Self::BL => vec![B, L],
             Self::FR => vec![F, R],
