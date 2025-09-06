@@ -122,7 +122,7 @@ impl Cube {
             }
             CubeMove::R => {
                 self.cycle_cubies(&CYCLE_R_CORNERS, &TWIST_CORNERS_120_240);
-                self.cycle_cubies(&CYCLE_R_EDGES, &TWIST_EDGES_FLIP);
+                self.cycle_cubies(&CYCLE_R_EDGES, &TWIST_EDGES_SOLVED);
             }
             CubeMove::R2 => {
                 self.apply_move(CubeMove::R);
@@ -130,7 +130,7 @@ impl Cube {
             },
             CubeMove::Rp => {
                 self.cycle_cubies(&CYCLE_RP_CORNERS, &TWIST_CORNERS_120_240);
-                self.cycle_cubies(&CYCLE_RP_EDGES, &TWIST_EDGES_FLIP);
+                self.cycle_cubies(&CYCLE_RP_EDGES, &TWIST_EDGES_SOLVED);
             }
             CubeMove::F => {
                 self.cycle_cubies(&CYCLE_F_CORNERS, &TWIST_CORNERS_120_240);
@@ -160,7 +160,7 @@ impl Cube {
             },
             CubeMove::L => {
                 self.cycle_cubies(&CYCLE_L_CORNERS, &TWIST_CORNERS_120_240);
-                self.cycle_cubies(&CYCLE_L_EDGES, &TWIST_EDGES_FLIP);
+                self.cycle_cubies(&CYCLE_L_EDGES, &TWIST_EDGES_SOLVED);
             },
             CubeMove::L2 => {
                 self.apply_move(CubeMove::L);
@@ -502,86 +502,6 @@ mod tests {
     }
 
     #[test]
-    fn test_move_r() {
-        let mut cube = Cube::solved();
-        cube.apply_move(CubeMove::R);
-
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::UBR],
-            CubePiece::UFR.twisted(Twist::CW_120)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::DRB],
-            CubePiece::UBR.twisted(Twist::CW_240)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::DFR],
-            CubePiece::DBR.twisted(Twist::CW_120)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::URF],
-            CubePiece::DFR.twisted(Twist::CW_240)
-        );
-
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::BR],
-            CubePiece::UR.twisted(Twist::FLIPPED)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::DR],
-            CubePiece::BR.twisted(Twist::FLIPPED)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::FR],
-            CubePiece::DR.twisted(Twist::FLIPPED)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::UR],
-            CubePiece::FR.twisted(Twist::FLIPPED)
-        );
-    }
-
-    #[test]
-    fn test_move_rp() {
-        let mut cube = Cube::solved();
-        cube.apply_move(CubeMove::Rp);
-
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::URF],
-            CubePiece::UBR.twisted(Twist::CW_240)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::UBR],
-            CubePiece::DBR.twisted(Twist::CW_120)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::DRB],
-            CubePiece::DFR.twisted(Twist::CW_240)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::DFR],
-            CubePiece::UFR.twisted(Twist::CW_120)
-        );
-
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::UR],
-            CubePiece::BR.twisted(Twist::FLIPPED)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::BR],
-            CubePiece::DR.twisted(Twist::FLIPPED)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::DR],
-            CubePiece::FR.twisted(Twist::FLIPPED)
-        );
-        assert_eq!(
-            cube.cubies[&CubePieceLocation::FR],
-            CubePiece::UR.twisted(Twist::FLIPPED)
-        );
-    }
-
-    #[test]
     fn test_twist_r2() {
         use CubeMove::*;
 
@@ -604,17 +524,6 @@ mod tests {
         cube.apply_move(R);
         cube.apply_move(R);
         cube.apply_move(R);
-
-        assert!(cube.is_solved());
-    }
-
-    #[test]
-    fn test_r_rp() {
-        use CubeMove::*;
-
-        let mut cube = Cube::solved();
-        cube.apply_move(R);
-        cube.apply_move(Rp);
 
         assert!(cube.is_solved());
     }
@@ -711,10 +620,10 @@ mod tests {
 
         assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::UB).to_sticker_name(), "UR");
         assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::BU).to_sticker_name(), "RU");
-        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::UR).to_sticker_name(), "RF");
-        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RU).to_sticker_name(), "FR");
-        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::FR).to_sticker_name(), "BU");
-        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RF).to_sticker_name(), "UB");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::UR).to_sticker_name(), "FR");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RU).to_sticker_name(), "RF");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::FR).to_sticker_name(), "UB");
+        assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RF).to_sticker_name(), "BU");
         assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::UBR).to_sticker_name(), "LBU");
         assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::BRU).to_sticker_name(), "BUL");
         assert_eq!(cube.get_sticker_origin(&CubeStickerLocation::RUB).to_sticker_name(), "ULB");

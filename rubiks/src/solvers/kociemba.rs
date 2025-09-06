@@ -165,19 +165,19 @@ mod tests {
     use crate::solvers::kociemba::{make_cube_string, KociembaSolver};
     use crate::cube::{Cube, CubeMove};
 
-    // #[test]
-    // fn test_solution_solve_cube() {
-    //     let mut rng = rand::rng();
-    //     let solver = KociembaSolver::default(); 
+    #[test]
+    fn test_solution_solve_cube() {
+        let mut rng = rand::rng();
+        let solver = KociembaSolver::default(); 
 
-    //     for _ in 0..1 {
-    //         let mut cube = Cube::random_uniform(&mut rng);
-    //         let solution = solver.solve(&cube).expect("Random uniform cube should be solvable.");
+        for _ in 0..2 {
+            let mut cube = Cube::random_uniform(&mut rng);
+            let solution = solver.solve(&cube).expect("Random uniform cube should be solvable.");
 
-    //         cube.apply_moves(&solution);
-    //         assert!(cube.is_solved());
-    //     }
-    // }
+            cube.apply_moves(&solution);
+            assert!(cube.is_solved());
+        }
+    }
 
     #[test]
     fn test_cube_string_face_count() {
@@ -203,6 +203,17 @@ mod tests {
         let cube_string = make_cube_string(&cube);
         assert_eq!(cube_string, "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB");
     }
+
+    #[test]
+    fn test_cube_string_expected_l() {
+        let mut cube = Cube::solved();
+        let scramble = CubeMove::parse_array("L").expect("Scramble is valid.");
+        cube.apply_moves(&scramble);
+
+        let cube_string = make_cube_string(&cube);
+        assert_eq!(cube_string, "BUUBUUBUURRRRRRRRRUFFUFFUFFFDDFDDFDDLLLLLLLLLBBDBBDBBD");
+    }
+
 
     #[test]
     fn test_cube_string_expected_t_perm() {
