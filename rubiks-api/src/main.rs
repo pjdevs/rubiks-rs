@@ -5,6 +5,7 @@ use axum::routing::get;
 use rubiks::generators::scramble::ScrambleGenerator;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use std::collections::HashMap;
+use std::sync::Arc;
 use rubiks::cube::{Cube, CubeMove};
 
 #[derive(Clone, Default)]
@@ -21,22 +22,32 @@ async fn main() {
         .route("/cube/solved", get(get_cube_is_solved))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
-        .with_state(AppState::default());
+        .with_state(Arc::new(AppState::default()));
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn get_scramble(State(state): State<AppState>) -> String {
+// TODO Make it daily
+async fn get_daily_scramble(State(state): State<Arc<AppState>>) -> String {
     let scramble = state.generator.generate();
     scramble.iter().map(|m| m.to_string()).collect::<Vec<String>>().join(" ")
 }
 
-// TODO Make it daily
-async fn get_daily_scramble(State(state): State<AppState>) -> String {
-    let scramble = state.generator.generate();
-    scramble.iter().map(|m| m.to_string()).collect::<Vec<String>>().join(" ")
+async fn get_scramble(State(state): State<Arc<AppState>>) -> String {
+    generate_scramble(state).await
+}
+
+async fn generate_scramble(state: Arc<AppState>) -> String {
+    let scramble = tokio::task::spawn_blocking(move || {
+        let scramble = state.generator.generate();
+        scramble.iter().map(|m| m.to_string()).collect::<Vec<String>>().join(" ")
+    })
+    .await
+    .expect("Scramble generation panicked.");
+
+    scramble
 }
 
 // TODO Make a scramble extractor
