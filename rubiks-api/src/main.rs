@@ -1,34 +1,42 @@
 use axum::{Json, Router};
 use axum::http::StatusCode;
-use axum::extract::Query;
+use axum::extract::{Query, State};
 use axum::routing::get;
-use rand::seq::IndexedRandom;
+use rubiks::generators::scramble::ScrambleGenerator;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use std::collections::HashMap;
 use rubiks::cube::{Cube, CubeMove};
+
+#[derive(Clone, Default)]
+struct AppState {
+    generator: ScrambleGenerator
+}
 
 #[tokio::main]
 async fn main() {
     // build our application with a single route
     let app = Router::new()
+        .route("/scramble", get(get_scramble))
         .route("/daily/scramble", get(get_daily_scramble))
         .route("/cube/solved", get(get_cube_is_solved))
         .layer(CorsLayer::permissive())
-        .layer(TraceLayer::new_for_http());
+        .layer(TraceLayer::new_for_http())
+        .with_state(AppState::default());
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
-static SCRAMBLES: [&str; 3] = [
-    "B2 D2 F' D2 R' D B2 U' R F' R2 F' U2 R2 F' R2 B2 U2 R2 B",
-    "B D R2 F U' F' U R F2 R2 B2 R' F2 L' U2 L2 F2 B",
-    "D' B D R2 F2 D2 R F2 R' B2 L' D2 R2 D2 F U2 R B' U L F2",
-];
+async fn get_scramble(State(state): State<AppState>) -> String {
+    let scramble = state.generator.generate();
+    scramble.iter().map(|m| m.to_string()).collect::<Vec<String>>().join(" ")
+}
 
-async fn get_daily_scramble() -> &'static str {
-    SCRAMBLES.choose(&mut rand::rng()).unwrap_or(&SCRAMBLES[0])
+// TODO Make it daily
+async fn get_daily_scramble(State(state): State<AppState>) -> String {
+    let scramble = state.generator.generate();
+    scramble.iter().map(|m| m.to_string()).collect::<Vec<String>>().join(" ")
 }
 
 // TODO Make a scramble extractor

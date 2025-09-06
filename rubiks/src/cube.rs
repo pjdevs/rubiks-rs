@@ -1,12 +1,12 @@
+use core::fmt;
 use rand::Rng;
-
+use std::collections::HashMap;
+use std::iter::once;
 use crate::location::CubePieceLocation;
 use crate::piece::CubePiece;
 use crate::stickers::CubeStickerLocation;
 use crate::twist::Twist;
 use crate::utils::permutations;
-use std::collections::HashMap;
-use std::iter::once;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CubeMove {
@@ -90,6 +90,32 @@ impl CubeMove {
         }
 
         Some(cube_moves)
+    }
+}
+
+impl fmt::Display for CubeMove {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = match self {
+            CubeMove::U => "U",
+            CubeMove::U2 => "U2",
+            CubeMove::Up => "U'",
+            CubeMove::R => "R",
+            CubeMove::R2 => "R2",
+            CubeMove::Rp => "R'",
+            CubeMove::F => "F",
+            CubeMove::F2 => "F2",
+            CubeMove::Fp => "F'",
+            CubeMove::D => "D",
+            CubeMove::D2 => "D2",
+            CubeMove::Dp => "D'",
+            CubeMove::L => "L",
+            CubeMove::L2 => "L2",
+            CubeMove::Lp => "L'",
+            CubeMove::B => "B",
+            CubeMove::B2 => "B2",
+            CubeMove::Bp => "B'",
+        };
+        write!(f, "{}", s)
     }
 }
 

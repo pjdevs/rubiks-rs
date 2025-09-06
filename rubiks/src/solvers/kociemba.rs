@@ -3,6 +3,7 @@
 use crate::{cube::{Cube, CubeMove}, faces::Face, stickers::CubeStickerLocation};
 use kociemba::{moves::Move, solver::solve};
 
+#[derive(Clone, Copy)]
 pub struct KociembaSolver {
     pub max_size: usize,
     pub timeout: f32,
@@ -17,8 +18,6 @@ impl Default for KociembaSolver {
 impl KociembaSolver {
     pub fn solve(&self, cube: &Cube) -> Option<Vec<CubeMove>> {
         let cube_string = make_cube_string(&cube);
-
-        println!("Will solve cube : {}", cube_string);
 
         match solve(&cube_string, 20, 1.0) {
             Ok(solution) => Some(
