@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::solvers::kociemba::KociembaSolver;
 use crate::cube::{Cube, CubeMove};
 
@@ -15,9 +17,8 @@ impl Default for ScrambleGenerator {
 }
 
 impl ScrambleGenerator {
-    pub fn generate(&self) -> Vec<CubeMove> {
-        let mut rng = rand::rng();
-        let cube = Cube::random_uniform(&mut rng);
+    pub fn generate(&self, rng: &mut impl Rng) -> Vec<CubeMove> {
+        let cube = Cube::random_uniform(rng);
         self.solver.solve(&cube).expect("Random uniform cube should have a solution")
     }
 }

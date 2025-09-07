@@ -19,7 +19,7 @@ impl KociembaSolver {
     pub fn solve(&self, cube: &Cube) -> Option<Vec<CubeMove>> {
         let cube_string = make_cube_string(&cube);
 
-        match solve(&cube_string, 20, 1.0) {
+        match solve(&cube_string, self.max_size, self.timeout) {
             Ok(solution) => Some(
                 solution.solution
                 .into_iter()
