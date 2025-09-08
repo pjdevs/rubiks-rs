@@ -1,9 +1,8 @@
 use sqlx::FromRow;
 
 #[derive(Clone, FromRow, Debug)]
-struct DailySolve {
-    id: i64,
-    username: String,
-    date: String,
-    time: i64,
+pub struct DailySolve {
+    pub username: String,
+    pub date: i32,
+    pub time: i32,
 }

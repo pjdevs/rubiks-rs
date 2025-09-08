@@ -1,7 +1,6 @@
 use sqlx::{Sqlite, SqlitePool};
 use sqlx::migrate::MigrateDatabase;
-
-const DB_URL: &str = "sqlite://rubiks.db";
+use crate::database::constants::DB_URL;
 
 pub async fn ensure_db() {
     if !Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
@@ -18,12 +17,20 @@ pub async fn ensure_db() {
         .await
         .expect("Cannot connect to database for table creation.");
     
-    let result = sqlx::query("CREATE TABLE IF NOT EXISTS daily_solves (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, username VARCHAR(250) NOT NULL, date TEXT NOT NULL, time INTEGER NOT NULL);")
+    let result = sqlx::query(
+        "CREATE TABLE IF NOT EXISTS daily_solves (\
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,\
+            username VARCHAR(250) NOT NULL,\
+            date INTEGER NOT NULL,\
+            time INTEGER NOT NULL,\
+            CONSTRAINT unique_user_date UNIQUE (username, date)\
+        );"
+    )
         .execute(&db)
         .await
         .expect("Could not create daily_solves table.");
 
-        println!("Create daily_solves table result: {:?}", result);
+    println!("Create daily_solves table result: {:?}", result);
 }
 
 #[tokio::main]

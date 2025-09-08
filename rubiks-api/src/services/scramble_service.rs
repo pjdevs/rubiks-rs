@@ -1,7 +1,7 @@
 use std::sync::Arc;
-use date::Date;
+use chrono::{Datelike, NaiveDate};
 use rand::{rngs::StdRng, SeedableRng};
-use rubiks::generators::scramble::ScrambleGenerator;
+use rubiks::{cube::{Cube, CubeMove}, generators::scramble::ScrambleGenerator};
 
 #[derive(Clone)]
 pub struct ScrambleService {
@@ -15,13 +15,22 @@ impl ScrambleService {
         }
     }
 
-    pub async fn get_daily_scramble(&self, date: Date) -> String {
-        let seed = (date.year as u64) * 10_000u64 + (date.month as u64) * 100u64 + date.day as u64;
+    pub async fn get_daily_scramble(&self, date: NaiveDate) -> String {
+        let seed = (date.year() as u64) * 10_000u64 + (date.month() as u64) * 100u64 + date.day() as u64;
         self.generate_scramble_with_seed(Some(seed)).await
     }
 
     pub async fn get_random_scramble(&self) -> String {
         self.generate_scramble_with_seed(None).await
+    }
+
+    pub fn is_cube_solved(&self, moves_str: &str) -> Option<bool> {   
+        CubeMove::parse_array(&moves_str)
+            .map(|moves| {
+                let mut cube = Cube::solved();
+                cube.apply_moves(&moves);
+                cube.is_solved()
+            })
     }
 
     async fn generate_scramble_with_seed(&self, seed: Option<u64>) -> String {
