@@ -6,15 +6,10 @@ use chrono::Utc;
 use sqlx::SqlitePool;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use std::collections::HashMap;
-use crate::database::daily_solves::SqliteDailySolvesRepository;
-use crate::dtos::DailySolveRequest;
-use crate::services::daily_solves::DailySolvesService;
-use crate::services::scramble_service::ScrambleService;
-
-mod database;
-mod repositories;
-mod services;
-mod dtos;
+use rubiks_api::database::daily_solves::SqliteDailySolvesRepository;
+use rubiks_api::dtos::DailySolveRequest;
+use rubiks_api::services::daily_solves::DailySolvesService;
+use rubiks_api::services::scramble_service::ScrambleService;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -25,10 +20,10 @@ pub struct AppState {
 #[tokio::main]
 async fn main() {
     // ensure db is created
-    database::migrate::ensure_db().await;
+    rubiks_api::database::migration::ensure_db().await;
 
     // create the connection pool
-    let pool = SqlitePool::connect_lazy(database::constants::DB_URL)
+    let pool = SqlitePool::connect_lazy(rubiks_api::database::constants::DB_URL)
         .expect("Cannot create lazy pool to SQLite database.");
 
     // build our application with a single route

@@ -1,5 +1,6 @@
 use sqlx::{Sqlite, SqlitePool};
 use sqlx::migrate::MigrateDatabase;
+
 use crate::database::constants::DB_URL;
 
 pub async fn ensure_db() {
@@ -23,7 +24,7 @@ pub async fn ensure_db() {
             username VARCHAR(250) NOT NULL,\
             date INTEGER NOT NULL,\
             time INTEGER NOT NULL,\
-            CONSTRAINT unique_user_date UNIQUE (username, date)\
+            CONSTRAINT one_solve_per_day_per_user UNIQUE (username, date)\
         );"
     )
         .execute(&db)
@@ -31,9 +32,4 @@ pub async fn ensure_db() {
         .expect("Could not create daily_solves table.");
 
     println!("Create daily_solves table result: {:?}", result);
-}
-
-#[tokio::main]
-async fn main() {
-    ensure_db().await;
 }

@@ -13,7 +13,3 @@ rubiks = { path = "../rubiks" }
 rand = "0.9.2"
 chrono = "0.4.41"
 async-trait = "0.1.89"
-
-[[bin]]
-name = "migrate"
-path = "src/migrations/migrate.rs"
