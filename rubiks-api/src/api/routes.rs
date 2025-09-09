@@ -6,7 +6,7 @@ use axum::{Json, Router};
 use chrono::Utc;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
-use crate::api::dtos::{DailySolveDto, DailySolveListDto, DailySolveRequestDto};
+use crate::api::dtos::{DailySolveListDto, DailySolveRequestDto};
 use crate::api::state::AppState;
 use crate::domain::models::DailySolve;
 
@@ -35,9 +35,10 @@ async fn post_daily_scramble(
     State(state): State<AppState>,
     extract::Json(request): extract::Json<DailySolveRequestDto>
 ) -> Result<(), (StatusCode, String)> {
+    let today = Utc::now().date_naive();
     let solve = DailySolve {
         username: request.username,
-        date: Utc::now().date_naive(),
+        date: today,
         time: request.time,
     };
     let result = state.daily_solve_service.add_daily_solve(solve).await;
