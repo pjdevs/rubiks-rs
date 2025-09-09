@@ -19,7 +19,7 @@ impl<R: DailySolvesRepository> DailySolvesService<R> {
             return Err("time is invalid.".into());
         }
 
-        if daily_solve.username.is_empty() {
+        if daily_solve.username.is_empty() || daily_solve.username.chars().all(|c| c == ' ') {
             return Err("username is empty.".into());
         }
 
