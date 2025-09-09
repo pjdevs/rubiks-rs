@@ -1,8 +1,6 @@
 use chrono::{Datelike, NaiveDate};
-
-use crate::database::models::DailySolve;
-use crate::dtos::DailySolveRequest;
-use crate::repositories::DailySolvesRepository;
+use crate::domain::models::DailySolve;
+use crate::repositories::daily_solve::DailySolvesRepository;
 
 #[derive(Clone, Copy)]
 pub struct DailySolvesService<R: DailySolvesRepository> {
@@ -16,16 +14,19 @@ impl<R: DailySolvesRepository> DailySolvesService<R> {
         }
     }
 
-    pub async fn add_daily_solve(&self, request: DailySolveRequest, today: NaiveDate) -> Result<bool, String> {
-        if request.time <= 0 {
+    pub async fn add_daily_solve(&self, daily_solve: DailySolve) -> Result<(), String> {
+        if daily_solve.time <= 0 {
             return Err("time is invalid.".into());
         }
 
-        let daily_solve = DailySolve {
-            username: request.username,
-            date: today.num_days_from_ce(),
-            time: request.time
-        };
+        if daily_solve.username.is_empty() {
+            return Err("username is empty.".into());
+        }
+
         self.daily_repository.insert(daily_solve).await
+    }
+
+    pub async fn fetch_today_solves(&self, today: NaiveDate) -> Result<Vec<DailySolve>, String> {
+        self.daily_repository.fetch_all_by_date(today).await
     }
 }

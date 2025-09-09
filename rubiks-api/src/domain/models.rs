@@ -1,8 +1,7 @@
-use sqlx::FromRow;
+use chrono::NaiveDate;
 
-#[derive(Clone, FromRow, Debug)]
 pub struct DailySolve {
     pub username: String,
-    pub date: i32,
+    pub date: NaiveDate,
     pub time: i32,
 }
