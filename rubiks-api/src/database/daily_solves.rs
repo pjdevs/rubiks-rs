@@ -33,7 +33,7 @@ impl DailySolvesRepository for SqliteDailySolvesRepository {
     }
 
     async fn fetch_all_by_date(&self, date: NaiveDate) -> Result<Vec<DailySolve>, String> {
-        let result = sqlx::query_as::<_, DailySolveRow>("SELECT (username, date, time) FROM daily_solves WHERE date = ?1 ORDER BY time ASC;")
+        let result = sqlx::query_as::<_, DailySolveRow>("SELECT username, date, time FROM daily_solves WHERE date = ?1 ORDER BY time ASC;")
             .bind(date.num_days_from_ce())
             .fetch_all(&self.pool)
             .await;
