@@ -317,16 +317,18 @@ impl Cube {
         edge_twists[0] = edge_twists[0].edge_add(edge_twist_sum.edge_opposite());
 
         // Make cube
-        for corner_index in corners_permutation {
-            let location = CORNER_LOCATIONS[corner_index];
+        for (solved_index, corner_index)  in corners_permutation.into_iter().enumerate() {
+            let solved_location = CORNER_LOCATIONS[solved_index];
+            let permuted_corner_location = CORNER_LOCATIONS[corner_index];
             let twist = corner_twists[corner_index];
-            cubies.insert(location, solved_cubies[&location].twisted(twist));
+            cubies.insert(solved_location, solved_cubies[&permuted_corner_location].twisted(twist));
         }
 
-        for edge_index in edges_permutation {
-            let location = EDGE_LOCATIONS[edge_index];
+        for (solved_index, edge_index) in edges_permutation.into_iter().enumerate() {
+            let solved_edge_location = EDGE_LOCATIONS[solved_index];
+            let permuted_edge_location = EDGE_LOCATIONS[edge_index];
             let twist = edge_twists[edge_index];
-            cubies.insert(location, solved_cubies[&location].twisted(twist));
+            cubies.insert(solved_edge_location, solved_cubies[&permuted_edge_location].twisted(twist));
         }
 
         Cube { cubies }
