@@ -11,7 +11,7 @@ pub struct KociembaSolver {
 
 impl Default for KociembaSolver {
     fn default() -> Self {
-        Self { max_size: 20, timeout: 0.0 }
+        Self { max_size: 20, timeout: 5.0 }
     }
 }
 
